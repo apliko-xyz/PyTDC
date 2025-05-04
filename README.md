@@ -45,7 +45,7 @@ PyTDC has forked from Therapeutics Data Commons, a datasets store with ml-ready-
 To install the core environment dependencies of TDC, use `pip`:
 
 ```bash
-pip install pytdc-nextml==0.0.0
+pip install pytdc-nextml
 ```
 
 
