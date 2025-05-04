@@ -47,6 +47,6 @@ jobs:
         run: |
           echo "Creating Conda Environment from environment.yml"
           conda env create -q -f environment.yml
-          conda activate pytdc 
+          conda activate pytdc
           python run_tests.py
           conda deactivate
