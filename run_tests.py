@@ -3,7 +3,7 @@ import sys
 
 if __name__ == '__main__':
     loader = unittest.TestLoader()
-    start_dir = 'tdc/test'
+    start_dir = 'tdc_ml/test'
 
     # Check if a specific test is provided as a command-line argument
     if len(sys.argv) > 1:
