@@ -26,7 +26,8 @@ setup(
     name="pytdc-nextml",
     version=__version__,
     license="MIT",
-    description="PyTDC: A multimodal machine learning training, evaluation, and inference platform for biomedical foundation models",
+    description=
+    "PyTDC: A multimodal machine learning training, evaluation, and inference platform for biomedical foundation models",
     long_description=readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/apliko-xyz/PyTDC",
