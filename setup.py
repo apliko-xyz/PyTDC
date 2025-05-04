@@ -5,7 +5,7 @@ from os import path
 from io import open  # for Python 2 and 3 compatibility
 
 # get __version__ from _version.py
-ver_file = path.join("tdc", "version.py")
+ver_file = path.join("tdc_ml", "version.py")
 with open(ver_file) as f:
     exec(f.read())
 
@@ -23,13 +23,13 @@ with open(path.join(this_directory, "requirements.txt"), encoding="utf-8") as f:
     requirements = f.read().splitlines()
 
 setup(
-    name="pytdc",
+    name="pytdc-nextml",
     version=__version__,
     license="MIT",
-    description="Therapeutics Commons",
+    description="PyTDC: A multimodal machine learning training, evaluation, and inference platform for biomedical foundation models",
     long_description=readme(),
     long_description_content_type="text/markdown",
-    url="https://github.com/mims-harvard/TDC",
+    url="https://github.com/apliko-xyz/PyTDC",
     author="PyTDC Team",
     author_email="amva13@alum.mit.edu",
     packages=find_packages(exclude=["test"]),
