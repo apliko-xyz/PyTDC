@@ -1,4 +1,4 @@
-name: tdc-conda-env
+name: pytdc 
 channels:
   - bioconda
   - conda-forge

@@ -37,4 +37,5 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     setup_requires=["setuptools>=38.6.0"],
+    python_requires=">=3.9",
 )
