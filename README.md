@@ -1,5 +1,7 @@
-[![website](https://img.shields.io/badge/website-live-brightgreen)](https://tdcommons.ai)
-[![PyPI version](<MISSING>)]([https://badge.fury.io/py/PyTDC](https://pypi.org/project/pytdc-nextml/))
+[![website](https://img.shields.io/badge/website-live-brightgreen)](https://apliko.xyz/pytdc)
+[![PyPI version](https://img.shields.io/pypi/v/pytdc-ml.svg)](https://pypi.org/project/pytdc-ml/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/pypi/pyversions/pytdc-ml.svg)](https://pypi.org/project/pytdc-ml/)
 [![Downloads](https://pepy.tech/badge/pytdc/month)](https://pepy.tech/project/pytdc)
 [![Downloads](https://pepy.tech/badge/pytdc)](https://pepy.tech/project/pytdc)
 [![GitHub Repo stars](https://img.shields.io/github/stars/mims-harvard/TDC)](https://github.com/mims-harvard/TDC/stargazers)
@@ -9,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 
-[**NeurIPS 2024 AIDrugX Paper**](https://openreview.net/forum?id=kL8dlYp6IM)
+[**ICML 2025 Paper**](https://openreview.net/forum?id=HV8vZDDoYc) | [**NeurIPS 2024 AIDrugX Paper**](https://openreview.net/forum?id=kL8dlYp6IM)
 
 # Introducing PyTDC
 Existing biomedical benchmarks do not provide end-to-end infrastructure for training, evaluation, and inference of models that integrate multimodal biological data and a broad range of machine learning tasks in therapeutics. We present PyTDC, an open-source machine-learning platform providing streamlined training, evaluation, and inference software for multimodal biological AI models. PyTDC unifies distributed, heterogeneous, continuously updated data sources and model weights and standardizes benchmarking and inference endpoints.
@@ -27,7 +29,7 @@ We present PyTDC, a machine-learning platform providing streamlined training, ev
 
 ## Built on the Therapeutic Data Commons (TDC)
 
-PyTDC has forked from Therapeutics Data Commons, a datasets store - https://github.com/mims-harvard/TDC
+PyTDC has forked from Therapeutics Data Commons, a datasets store with ml-ready-datasets in 66 tasks- https://github.com/mims-harvard/TDC
 
 ## Key PyTDC Presentations and Publications
 
@@ -50,7 +52,7 @@ pip install pytdc-nextml==0.0.0
 
 ## Cite Us
 
-If you find PyTDC useful, cite our [ICML paper](https://openreview.net/pdf?id=kL8dlYp6IM) and [NeurIPS paper](https://openreview.net/pdf?id=kL8dlYp6IM):
+If you find PyTDC useful, cite our [ICML paper](https://openreview.net/forum?id=HV8vZDDoYc) and [NeurIPS paper](https://openreview.net/pdf?id=kL8dlYp6IM):
 
 ```
 @inproceedings{
