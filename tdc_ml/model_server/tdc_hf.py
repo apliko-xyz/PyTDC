@@ -57,14 +57,14 @@ class tdc_hf_interface:
             raise Exception("this model is not in the TDC model hub GH repo.")
         elif self.model_name == "Geneformer":
             from transformers import AutoModelForMaskedLM
-            model = AutoModelForMaskedLM.from_pretrained("tdc/Geneformer")
+            model = AutoModelForMaskedLM.from_pretrained("apliko/Geneformer")
             return model
         elif self.model_name == "scGPT":
             from transformers import AutoConfig, AutoModel
             from .models.scgpt import ScGPTModel, ScGPTConfig
             AutoConfig.register("scgpt", ScGPTConfig)
             AutoModel.register(ScGPTConfig, ScGPTModel)
-            model = AutoModel.from_pretrained("tdc/scGPT")
+            model = AutoModel.from_pretrained("apliko/scGPT")
             return model
         elif self.model_name == "scVI":
             from .models.scvi import scVI
