@@ -1,3 +1,6 @@
+<p align="center"><img src="https://raw.githubusercontent.com/apliko-xyz/PyTDC/master/pytdc_logo.png" alt="logo" width="600px" /></p>
+
+----
 [![website](https://img.shields.io/badge/website-live-brightgreen)](https://apliko.xyz/pytdc)
 [![PyPI version](https://img.shields.io/pypi/v/pytdc-nextml.svg)](https://pypi.org/project/pytdc-nextml/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
