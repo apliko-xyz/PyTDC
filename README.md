@@ -30,7 +30,7 @@ We present PyTDC, a machine-learning platform providing streamlined training, ev
 
 [**\[Learn More\]**](https://tdcommons.ai/pytdc)
 
-## Built on the Therapeutic Data Commons (TDC)
+## Built on the Therapeutics Data Commons (TDC)
 
 PyTDC has forked from Therapeutics Data Commons, a datasets store with ml-ready-datasets in 66 tasks- https://github.com/mims-harvard/TDC
 
