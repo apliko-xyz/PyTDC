@@ -91,8 +91,8 @@ def novelty(generated_smiles_lst, training_smiles_lst):
     generated_smiles_lst = unique_lst_of_smiles(generated_smiles_lst)
     training_smiles_lst = unique_lst_of_smiles(training_smiles_lst)
     novel_ratio = (sum(
-        [1 if i in training_smiles_lst else 0 for i in generated_smiles_lst]) *
-                   1.0 / len(generated_smiles_lst))
+        [1 if i in training_smiles_lst else 0
+         for i in generated_smiles_lst]) * 1.0 / len(generated_smiles_lst))
     return 1 - novel_ratio
 
 
@@ -453,7 +453,8 @@ def fcd_distance(generated_smiles_lst, training_smiles_lst):
         try:
             import torch, fcd_torch
 
-            return fcd_distance_torch(generated_smiles_lst, training_smiles_lst)
+            return fcd_distance_torch(generated_smiles_lst,
+                                      training_smiles_lst)
         except:
             raise ImportError(
                 "Please install fcd by 'pip install FCD' (for Tensorflow backend) \
@@ -510,7 +511,6 @@ def ncircles(list_of_smiles, t=0.75, random_state=42, radius=2, nbits=1024):
 
         return len(C_fps), C_fps
 
-
     if list_of_smiles and isinstance(list_of_smiles[0], str):
         fingerprints = [
             AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s),
@@ -522,6 +522,7 @@ def ncircles(list_of_smiles, t=0.75, random_state=42, radius=2, nbits=1024):
         fingerprints = list_of_smiles
 
     return _ncircles_helper(fingerprints)
+
 
 def ncircles_recursive(list_of_smiles,
                        L,
@@ -557,7 +558,6 @@ def ncircles_recursive(list_of_smiles,
     def _ncircles_rec_helper(fps, L):
         if L <= 0 or len(fps) == 0:
             return ncircles(fps, t, random_state, radius, nbits)
-
 
         rng = random.Random(random_state)
         ids = list(range(len(fps)))
@@ -649,8 +649,8 @@ def hamiltonian_diversity(smiles=None,
                     dists[j, i] = 0.0
                     continue
 
-                dists[i,
-                      j] = 1.0 - DataStructs.TanimotoSimilarity(fps[i], fps[j])
+                dists[i, j] = 1.0 - DataStructs.TanimotoSimilarity(
+                    fps[i], fps[j])
                 dists[j, i] = dists[i, j]
 
     # construct graph
@@ -663,6 +663,3 @@ def hamiltonian_diversity(smiles=None,
     tsp = nx.approximation.greedy_tsp(G, weight='weight')
 
     return sum(dists[tsp[i - 1], tsp[i]] for i in range(1, len(tsp)))
-
-
-def posecheck(prot)
