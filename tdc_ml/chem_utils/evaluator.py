@@ -664,5 +664,3 @@ def hamiltonian_diversity(smiles=None,
     tsp = nx.approximation.greedy_tsp(G, weight='weight')
 
     return sum(dists[tsp[i - 1], tsp[i]] for i in range(1, len(tsp)))
-
-def posecheck(prot, ligands):
