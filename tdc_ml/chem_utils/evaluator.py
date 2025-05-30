@@ -462,11 +462,7 @@ def fcd_distance(generated_smiles_lst, training_smiles_lst):
     return fcd_distance_tf(generated_smiles_lst, training_smiles_lst)
 
 
-def ncircles(list_of_smiles,
-              t=0.75,
-              random_state=42,
-              radius=2,
-              nbits=1024):
+def ncircles(list_of_smiles, t=0.75, random_state=42, radius=2, nbits=1024):
     '''
     NCircles is the maximum number of mutually exclusive circles that can fit into
     a set of molecular compounds with C of them as centres of circles of radius t.
@@ -506,9 +502,8 @@ def ncircles(list_of_smiles,
                 C_fps.append(x)
                 continue
 
-            min_d = min((1.0 - DataStructs.TanimotoSimilarity(x, y))
-                        for y in C_fps
-                    )
+            min_d = min(
+                (1.0 - DataStructs.TanimotoSimilarity(x, y)) for y in C_fps)
 
             if min_d > t:
                 C_fps.append(x)
@@ -518,16 +513,23 @@ def ncircles(list_of_smiles,
 
     if list_of_smiles and isinstance(list_of_smiles[0], str):
         fingerprints = [
-            AllChem.GetMorganFingerprintAsBitVect(
-                Chem.MolFromSmiles(s), radius=radius, nBits=nbits
-            ) for s in list_of_smiles
-        ]
+            AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s),
+                                                  radius=radius,
+                                                  nBits=nbits)
+            for s in list_of_smiles
+         ]
     else:
         fingerprints = list_of_smiles
 
     return _ncircles_helper(fingerprints)
 
-def ncircles_recursive(list_of_smiles, L, m, t=0.75, random_state=42, radius=2, nbits=1024):
+def ncircles_recursive(list_of_smiles,
+                       L,
+                       m,
+                       t=0.75,
+                       random_state=42,
+                       radius=2,
+                       nbits=1024):
     '''
     See above for NCircles info. This is an adaptation of algorithm 4 in [1]. Recursively
     approximates NCircles of smaller subsets and combines for better results.
@@ -572,21 +574,26 @@ def ncircles_recursive(list_of_smiles, L, m, t=0.75, random_state=42, radius=2, 
             if not sub:
                 continue
             child_seed = None if random_state is None else rng.randrange(2**32)
-            _, C_j = _ncircles_rec_helper(sub, L-1)
+            _, C_j = _ncircles_rec_helper(sub, L - 1)
             all_centers.extend(C_j)
 
         return ncircles(all_centers, t, random_state, radius, nbits)
 
     fingerprints = [
-        AllChem.GetMorganFingerprintAsBitVect(
-            Chem.MolFromSmiles(s), radius=radius, nBits=nbits
-        ) for s in list_of_smiles
-    ]
+        AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s),
+                                              radius=radius,
+                                              nBits=nbits)
+        for s in list_of_smiles
+      ]
 
     return _ncircles_rec_helper(fingerprints, L)
 
 
-def hamiltonian_diversity(smiles = None, mols = None, dists=None, radius=2, nbits=1024):
+def hamiltonian_diversity(smiles=None,
+                          mols=None,
+                          dists=None,
+                          radius=2,
+                          nbits=1024):
     '''
     Hamiltonian Diversity is a molecular diversity metric inspired by the
     traveling salesman problem. It measures how diverse a given set of
@@ -621,7 +628,8 @@ def hamiltonian_diversity(smiles = None, mols = None, dists=None, radius=2, nbit
         l = len(smiles)
         mols = [Chem.MolFromSmiles(s) for s in smiles]
     else:
-        raise ValueError("One of SMILES, Chem.Mol, or distances must be provided")
+        raise ValueError(
+            "One of SMILES, Chem.Mol, or distances must be provided")
 
     if l <= 1:
         return 0.0
@@ -641,10 +649,9 @@ def hamiltonian_diversity(smiles = None, mols = None, dists=None, radius=2, nbit
                     dists[j, i] = 0.0
                     continue
 
-                dists[i, j] = 1.0 - DataStructs.TanimotoSimilarity(fps[i], fps[j])
+                dists[i,
+                      j] = 1.0 - DataStructs.TanimotoSimilarity(fps[i], fps[j])
                 dists[j, i] = dists[i, j]
-
-        print(dists.shape)
 
     # construct graph
     G = nx.Graph()
@@ -652,11 +659,10 @@ def hamiltonian_diversity(smiles = None, mols = None, dists=None, radius=2, nbit
         for j in range(i + 1, l):
             G.add_edge(i, j, weight=dists[i, j])
 
-    print(G)
 
     # solve TSP using greedy approach
     tsp = nx.approximation.greedy_tsp(G, weight='weight')
 
-    return sum(
-        dists[tsp[i - 1], tsp[i]] for i in range(1, len(tsp))
-    )
+    return sum(dists[tsp[i - 1], tsp[i]] for i in range(1, len(tsp)))
+
+def posecheck(prot, ligands):
