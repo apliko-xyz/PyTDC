@@ -460,3 +460,203 @@ def fcd_distance(generated_smiles_lst, training_smiles_lst):
                                             or 'pip install fcd_torch' (for PyTorch backend)!"
             )
     return fcd_distance_tf(generated_smiles_lst, training_smiles_lst)
+
+
+def ncircles(list_of_smiles,
+              t=0.75,
+              random_state=42,
+              radius=2,
+              nbits=1024):
+    '''
+    NCircles is the maximum number of mutually exclusive circles that can fit into
+    a set of molecular compounds with C of them as centres of circles of radius t.
+    The set of molecular compounds is a chemical space measure, with the chemical
+    space being all possible molecules and tanimoto distance the distance metric.
+
+    This greedy algorithm approximates NCircles, as this is a known NP-hard problem.
+
+    Input:
+      list_of_smiles: List of chemical compounds in SMILES format
+      t: hyperparameter controlling the radii of the circles
+      random_state: random seed for reproducibility and debugging efficiency
+      radius: radius used for converting to binary fingerprint vectors
+      nbits: length of binary fingerprint vectors. Needed to compute distance.
+
+    Output:
+      k: NCircles score. This is a measure of diversity within a set of molecules
+      C: binary fingerprint vectors of circle centres
+
+    Reference:
+    Xie Y, Xu Z, Ma J, et al. How Much Space Has Been Explored? Measuring the
+    Chemical Space Covered by Databases and Machine-Generated Molecules[C]
+    //The Eleventh International Conference on Learning Representations.
+    '''
+    import random
+
+    def _ncircles_helper(fps):
+        rng = random.Random(random_state)
+        ids = list(range(len(fps)))
+        rng.shuffle(ids)
+
+        C_fps = []
+
+        for i in ids:
+            x = fps[i]
+            if not C_fps:
+                C_fps.append(x)
+                continue
+
+            min_d = min((1.0 - DataStructs.TanimotoSimilarity(x, y))
+                        for y in C_fps
+                    )
+
+            if min_d > t:
+                C_fps.append(x)
+
+        return len(C_fps), C_fps
+
+
+    if list_of_smiles and isinstance(list_of_smiles[0], str):
+        fingerprints = [
+            AllChem.GetMorganFingerprintAsBitVect(
+                Chem.MolFromSmiles(s), radius=radius, nBits=nbits
+            ) for s in list_of_smiles
+        ]
+    else:
+        fingerprints = list_of_smiles
+
+    return _ncircles_helper(fingerprints)
+
+def ncircles_recursive(list_of_smiles, L, m, t=0.75, random_state=42, radius=2, nbits=1024):
+    '''
+    See above for NCircles info. This is an adaptation of algorithm 4 in [1]. Recursively
+    approximates NCircles of smaller subsets and combines for better results.
+
+    Input:
+      list_of_smiles: list of chemical compounds in SMILES format
+      L: hyperparameter controlling the number of recursive layers
+      m: hyperparameter controlling the max number of elements in a subset
+      t: circle radii
+      random state: random seed for reproducibility and debugging
+      radius: radius for binary fingerprint vector
+      nbits: length of binary fingerprint vector
+
+    Output:
+      k: NCircle score. Measure of diversity in chemical dataset
+      C: binary fingerprint vectors of circle centres
+
+    References:
+    [1] Xie Y, Xu Z, Ma J, et al. How Much Space Has Been Explored? Measuring
+    the Chemical Space Covered by Databases and Machine-Generated Molecules[C]
+    //The Eleventh International Conference on Learning Representations.
+    '''
+    import random
+
+    def _ncircles_rec_helper(fps, L):
+        if L <= 0 or len(fps) == 0:
+            return ncircles(fps, t, random_state, radius, nbits)
+
+
+        rng = random.Random(random_state)
+        ids = list(range(len(fps)))
+        rng.shuffle(ids)
+
+        # split into m approximately equal subsets
+        subsets = [[] for _ in range(m)]
+        for i, id in enumerate(ids):
+            subsets[i % m].append(fps[id])
+
+        all_centers = []
+
+        for sub in subsets:
+            if not sub:
+                continue
+            child_seed = None if random_state is None else rng.randrange(2**32)
+            _, C_j = _ncircles_rec_helper(sub, L-1)
+            all_centers.extend(C_j)
+
+        return ncircles(all_centers, t, random_state, radius, nbits)
+
+    fingerprints = [
+        AllChem.GetMorganFingerprintAsBitVect(
+            Chem.MolFromSmiles(s), radius=radius, nBits=nbits
+        ) for s in list_of_smiles
+    ]
+
+    return _ncircles_rec_helper(fingerprints, L)
+
+
+def hamiltonian_diversity(smiles = None, mols = None, dists=None, radius=2, nbits=1024):
+    '''
+    Hamiltonian Diversity is a molecular diversity metric inspired by the
+    traveling salesman problem. It measures how diverse a given set of
+    molecules is by computing the cost of the shortest Hamiltonian
+    circuit through a graph of the chemical space measure weighted by
+    its distance metric (here we use Tanimoto Distance on binary
+    fingerprint vectors)
+
+    Inputs:
+      smiles: List of SMILES strings of molecules
+      mols: Molecules from rdkit
+      dists: pairwise distances in a molecular measure
+      radius: radius for binary fingerprint vectors
+      nbits: length of binary fingerprint vectors
+
+    Outputs:
+      HamDiv: hamiltonian diversity score (length of shortest
+        hamiltonian path in chemical measure)
+
+    Refencerences:
+    Hu X, Liu G, Yao Q, et al. Hamiltonian diversity: effectively
+    measuring molecular diversity by shortest Hamiltonian circuits[J].
+    Journal of Cheminformatics, 2024, 16(1): 94.
+    '''
+    import networkx as nx
+
+    if dists is not None:
+        l = dists.shape[0]
+    elif mols is not None:
+        l = len(mols)
+    elif smiles is not None:
+        l = len(smiles)
+        mols = [Chem.MolFromSmiles(s) for s in smiles]
+    else:
+        raise ValueError("One of SMILES, Chem.Mol, or distances must be provided")
+
+    if l <= 1:
+        return 0.0
+
+    # compute distance matrix if needed
+    if dists is None:
+        fps = [
+            AllChem.GetMorganFingerprintAsBitVect(
+                mol, radius=radius, nBits=nbits
+            ) for mol in mols
+        ]
+        dists = np.zeros((l, l))
+        for i in range(l):
+            for j in range(i + 1, l):
+                if i == j:
+                    dists[i, j] = 0.0
+                    dists[j, i] = 0.0
+                    continue
+
+                dists[i, j] = 1.0 - DataStructs.TanimotoSimilarity(fps[i], fps[j])
+                dists[j, i] = dists[i, j]
+
+        print(dists.shape)
+
+    # construct graph
+    G = nx.Graph()
+    for i in range(l):
+        for j in range(i + 1, l):
+            G.add_edge(i, j, weight=dists[i, j])
+
+    print(G)
+
+    # solve TSP using greedy approach
+    tsp = nx.approximation.greedy_tsp(G, weight='weight')
+
+    return sum(
+        dists[tsp[i - 1], tsp[i]] for i in range(1, len(tsp))
+    )
