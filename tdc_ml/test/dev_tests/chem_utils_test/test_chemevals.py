@@ -32,7 +32,7 @@ class TestEvals(unittest.TestCase):
             "C1=CC2=CC=CN=C2C=C1", "C1=NC=C(C=C1)C(=O)O", "CC(C)(C)CO",
             "C(C(C(=O)O)N)CO", "CC(C)C(=O)O", "CC(C)(C)C(=O)O", "CCCCCCCC(=O)O",
             "CCCCCCCCCCCC(=O)O", "CCCCCCCCCCCCCCCC(=O)O"
-         ]
+        ]
         super().__init__(methodName)
 
     def setUp(self):
