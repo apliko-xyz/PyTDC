@@ -4,7 +4,9 @@ import sys
 import unittest
 import shutil
 
+
 class TestEvals(unittest.TestCase):
+
     def __init__(self, methodName='runTest'):
         self.smi_short = ['CCO', 'CCN', 'CCC', 'CCCl',
                           'CCBr']  # ethanol, ethylamine, propane, chloroethane

@@ -517,7 +517,7 @@ def ncircles(list_of_smiles, t=0.75, random_state=42, radius=2, nbits=1024):
                                                   radius=radius,
                                                   nBits=nbits)
             for s in list_of_smiles
-         ]
+        ]
     else:
         fingerprints = list_of_smiles
 
@@ -584,7 +584,7 @@ def ncircles_recursive(list_of_smiles,
                                               radius=radius,
                                               nBits=nbits)
         for s in list_of_smiles
-      ]
+    ]
 
     return _ncircles_rec_helper(fingerprints, L)
 
@@ -637,9 +637,9 @@ def hamiltonian_diversity(smiles=None,
     # compute distance matrix if needed
     if dists is None:
         fps = [
-            AllChem.GetMorganFingerprintAsBitVect(
-                mol, radius=radius, nBits=nbits
-            ) for mol in mols
+            AllChem.GetMorganFingerprintAsBitVect(mol,
+                                                  radius=radius,
+                                                  nBits=nbits) for mol in mols
         ]
         dists = np.zeros((l, l))
         for i in range(l):
@@ -659,8 +659,10 @@ def hamiltonian_diversity(smiles=None,
         for j in range(i + 1, l):
             G.add_edge(i, j, weight=dists[i, j])
 
-
     # solve TSP using greedy approach
     tsp = nx.approximation.greedy_tsp(G, weight='weight')
 
     return sum(dists[tsp[i - 1], tsp[i]] for i in range(1, len(tsp)))
+
+
+def posecheck(prot)
