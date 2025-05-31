@@ -91,8 +91,8 @@ def novelty(generated_smiles_lst, training_smiles_lst):
     generated_smiles_lst = unique_lst_of_smiles(generated_smiles_lst)
     training_smiles_lst = unique_lst_of_smiles(training_smiles_lst)
     novel_ratio = (sum(
-        [1 if i in training_smiles_lst else 0
-         for i in generated_smiles_lst]) * 1.0 / len(generated_smiles_lst))
+        [1 if i in training_smiles_lst else 0 for i in generated_smiles_lst]) *
+                   1.0 / len(generated_smiles_lst))
     return 1 - novel_ratio
 
 
@@ -453,8 +453,7 @@ def fcd_distance(generated_smiles_lst, training_smiles_lst):
         try:
             import torch, fcd_torch
 
-            return fcd_distance_torch(generated_smiles_lst,
-                                      training_smiles_lst)
+            return fcd_distance_torch(generated_smiles_lst, training_smiles_lst)
         except:
             raise ImportError(
                 "Please install fcd by 'pip install FCD' (for Tensorflow backend) \
@@ -649,8 +648,8 @@ def hamiltonian_diversity(smiles=None,
                     dists[j, i] = 0.0
                     continue
 
-                dists[i, j] = 1.0 - DataStructs.TanimotoSimilarity(
-                    fps[i], fps[j])
+                dists[i,
+                      j] = 1.0 - DataStructs.TanimotoSimilarity(fps[i], fps[j])
                 dists[j, i] = dists[i, j]
 
     # construct graph
