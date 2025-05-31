@@ -662,3 +662,73 @@ def hamiltonian_diversity(smiles=None,
     tsp = nx.approximation.greedy_tsp(G, weight='weight')
 
     return sum(dists[tsp[i - 1], tsp[i]] for i in range(1, len(tsp)))
+
+
+def mol_vendi(smiles, radius=2, nbits=1024):
+    '''
+    Vendi Score is a measure of diversity in a molecular dataset.
+    It is defined as the exponential of the Shannon entropy of the
+    eigenvalues of the similarity matrix of a dataset. For more
+    info refer to the source paper.
+
+    Input:
+      smiles: list of molecules in SMILES format
+      radius: to be used to get binary fingerprint vectors
+      nbits: length of binary fingerprint vectors
+
+    Outputs:
+      vendi score: measure of diversity within the chemical space
+
+    References:
+      Friedman, D., & Dieng, A. B. (2022). The vendi score: A
+      diversity evaluation metric for machine learning. arXiv
+      preprint arXiv:2210.02410.
+    '''
+    try:
+        from vendi_score import vendi
+
+        # get binary fingerprint vectors
+        fingerprints = [
+            AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(s),
+                                                  radius=radius,
+                                                  nBits=nbits) for s in smiles
+        ]
+
+        # construct similarity matrix K with Fingerprint Similarity
+        N = len(smiles)
+        K = np.zeros((N, N))
+
+        for i in range(N):
+            for j in range(i, N):
+                K[i, j] = DataStructs.FingerprintSimilarity(
+                    fingerprints[i], fingerprints[j])
+                K[j, i] = K[i, j]
+
+        return vendi.score_K(K)
+    except:
+        raise ImportError('Please install vendi_score to access vendi scores.')
+
+
+def load_posecheck():
+    '''
+    Loads the PoseCheck class, which measures feasibility of a chemical
+    configuration suggested by a generative model. For more info refer
+    to the source paper.
+
+    Outputs:
+      PoseCheck: PoseCheck class, which acts as an API interface to
+      get PoseCheck scores
+
+    References:
+      Harris C, Didi K, Jamasb A, et al. PoseCheck: Generative Models for
+      3D Structure-based Drug Design Produce Unrealistic Poses[C]//NeurIPS
+      2023 Generative AI and Biology (GenBio) Workshop.
+    '''
+    try:
+        from posecheck import PoseCheck
+
+        pc = PoseCheck()
+
+        return pc
+    except:
+        raise ImportError('Please install posecheck to access PoseCheck')

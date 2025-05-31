@@ -69,6 +69,57 @@ class TestEvals(unittest.TestCase):
         assert ham_div >= 0
         assert f'{ham_div:.2f}' == '56.88'
 
+    def test_vendi(self):
+        from tdc_ml.chem_utils.evaluator import mol_vendi
+
+        score = mol_vendi(self.smi_short)
+
+        assert score >= 0
+        assert f'{score:.2f}' == '4.00'
+
+        score_big = mol_vendi(self.smi_long)
+
+        assert score_big >= 0
+        assert f'{score_big:.2f}' == '52.01'
+
+    def test_posecheck(self):
+        import tempfile
+
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+
+        from tdc_ml.chem_utils.evaluator import load_posecheck
+
+        MINIMAL_PDB = (
+            "MODEL        1\n"
+            "ATOM      1  N   GLY A   1      11.104  13.207   2.056  1.00 20.00           N\n"
+            "ATOM      2  CA  GLY A   1      12.567  13.487   2.048  1.00 20.00           C\n"
+            "ATOM      3  C   GLY A   1      13.005  14.746   2.857  1.00 20.00           C\n"
+            "ATOM      4  O   GLY A   1      14.185  14.982   2.986  1.00 20.00           O\n"
+            "TER\n"
+            "ENDMDL\n"
+            "END\n")
+
+        with tempfile.NamedTemporaryFile("w", suffix=".pdb",
+                                         delete=False) as tmp:
+            tmp.write(MINIMAL_PDB)
+            tmp.flush()
+            pdb_path = tmp.name
+
+        mol = Chem.AddHs(Chem.MolFromSmiles("CCO"))
+        AllChem.EmbedMolecule(mol, AllChem.ETKDG())
+        AllChem.UFFOptimizeMolecule(mol)
+
+        pc = load_posecheck()
+        pc.load_protein_from_pdb(pdb_path)
+        pc.load_ligands_from_mols([mol])
+        res = pc.run()
+
+        assert isinstance(res, dict)
+        assert 'clashes' in res
+        assert 'strain' in res
+        assert 'interactions' in res
+
     def teardown(self):
         print(os.getcwd())
 
