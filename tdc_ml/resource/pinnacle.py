@@ -173,5 +173,6 @@ class PINNACLE:
             disease = "IBD" if "3767" in file else "RA"
             df["disease"] = disease
             x.append(df)
+            # not removing
             # os.remove("./data/{}".format(file))
         return pd.concat(x, axis=0, ignore_index=True)
