@@ -17,7 +17,8 @@ class PINNACLE:
 
         # Filenames to check if already downloaded
         ppi_file = os.path.join(path, self.ppi_name + ".txt")
-        cell_tissue_file = os.path.join(path, self.cell_tissue_mg_name + ".txt")
+        cell_tissue_file = os.path.join(path,
+                                        self.cell_tissue_mg_name + ".txt")
         embeds_file = os.path.join(path, "pinnacle_protein_embed.pth")
         labels_file = os.path.join(path, "pinnacle_labels_dict.txt")
 
@@ -30,7 +31,9 @@ class PINNACLE:
         self.ppi.columns = ["Protein A", "Protein B"]
 
         if not os.path.exists(cell_tissue_file):
-            self.cell_tissue_mg = general_load(self.cell_tissue_mg_name, path, "\t") # use tab as names were left with spaces
+            self.cell_tissue_mg = general_load(
+                self.cell_tissue_mg_name, path,
+                "\t")  # use tab as names were left with spaces
         else:
             self.cell_tissue_mg = pd.read_csv(cell_tissue_file, sep="\t")
 
@@ -38,7 +41,8 @@ class PINNACLE:
         self.embeds_name = "pinnacle_protein_embed"
 
         if not os.path.exists(embeds_file):
-            self.embeds_name = download_wrapper(self.embeds_name, path, self.embeds_name)
+            self.embeds_name = download_wrapper(self.embeds_name, path,
+                                                self.embeds_name)
         self.embeds = torch.load(os.path.join(path, self.embeds_name + ".pth"))
 
         if not os.path.exists(labels_file):
@@ -61,8 +65,8 @@ class PINNACLE:
     def get_keys(self):
         protein_names_celltypes = [
             p for p in zip(self.keys["Cell Type"], self.keys["Name"])
-            if not (p[0].startswith("BTO") or p[0].startswith("CCI") or
-                    p[0].startswith("Sanity"))
+            if not (p[0].startswith("BTO") or p[0].startswith("CCI")
+                    or p[0].startswith("Sanity"))
         ]
         proteins = pd.DataFrame.from_dict({
             "target": [n for _, n in protein_names_celltypes],
@@ -95,8 +99,9 @@ class PINNACLE:
         df = pd.DataFrame.from_dict(x)
         df = df.transpose()
         assert len(df) == len(
-            x), "dims not mantained when translated to pandas. {} vs {}".format(
-                len(df), len(x))
+            x
+        ), "dims not mantained when translated to pandas. {} vs {}".format(
+            len(df), len(x))
         return df
 
     def get_exp_data(self, seed=1, split="train"):
@@ -107,7 +112,10 @@ class PINNACLE:
         filename = "pinnacle_output{}".format(seed)
 
         # Check if required CSVs already exist
-        csv_files = [f for f in os.listdir("./data") if f.endswith(".csv") and f"_{split}_" in f]
+        csv_files = [
+            f for f in os.listdir("./data")
+            if f.endswith(".csv") and f"_{split}_" in f
+        ]
         if csv_files:
             x = []
             for file in csv_files:
@@ -144,9 +152,11 @@ class PINNACLE:
         #     except:
         #         continue
 
-
         # Get a list of all CSV files in the unzipped folder
-        csv_files = [f for f in os.listdir("./data") if f.endswith(".csv") and f"_{split}_" in f]
+        csv_files = [
+            f for f in os.listdir("./data")
+            if f.endswith(".csv") and f"_{split}_" in f
+        ]
         if not csv_files:
             raise Exception("no csv")
         x = []
