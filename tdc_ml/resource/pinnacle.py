@@ -14,17 +14,40 @@ class PINNACLE:
     def __init__(self, path="./data"):
         self.ppi_name = "pinnacle_global_ppi_edgelist"
         self.cell_tissue_mg_name = "cell_tissue_mg_edgelist"
-        self.ppi = general_load(self.ppi_name, path, " ")
+
+        # Filenames to check if already downloaded
+        ppi_file = os.path.join(path, self.ppi_name + ".txt")
+        cell_tissue_file = os.path.join(path, self.cell_tissue_mg_name + ".txt")
+        embeds_file = os.path.join(path, "pinnacle_protein_embed.pth")
+        labels_file = os.path.join(path, "pinnacle_labels_dict.txt")
+
+        # Download only if missing
+        if not os.path.exists(ppi_file):
+            self.ppi = general_load(self.ppi_name, path, " ")
+        else:
+            self.ppi = pd.read_csv(ppi_file, sep=" ")
+
         self.ppi.columns = ["Protein A", "Protein B"]
-        self.cell_tissue_mg = general_load(
-            self.cell_tissue_mg_name, path,
-            "\t")  # use tab as names were left with spaces
+
+        if not os.path.exists(cell_tissue_file):
+            self.cell_tissue_mg = general_load(self.cell_tissue_mg_name, path, "\t") # use tab as names were left with spaces
+        else:
+            self.cell_tissue_mg = pd.read_csv(cell_tissue_file, sep="\t")
+
         self.cell_tissue_mg.columns = ["Tissue", "Cell"]
         self.embeds_name = "pinnacle_protein_embed"
-        self.embeds_name = download_wrapper(self.embeds_name, path,
-                                            self.embeds_name)
+
+        if not os.path.exists(embeds_file):
+            self.embeds_name = download_wrapper(self.embeds_name, path, self.embeds_name)
         self.embeds = torch.load(os.path.join(path, self.embeds_name + ".pth"))
-        self.keys = load_json_from_txt_file("pinnacle_labels_dict", path)
+
+        if not os.path.exists(labels_file):
+            self.keys = load_json_from_txt_file("pinnacle_labels_dict", path)
+        else:
+            import json
+            with open(labels_file, 'r') as f:
+                data = f.read().replace("'", '"')
+                self.keys = json.loads(data)
 
     def get_ppi(self):
         return self.ppi
@@ -82,45 +105,63 @@ class PINNACLE:
         if seed < 1 or seed > 10:
             raise ValueError(f'{seed} is not a valid seed in range 1-10.')
         filename = "pinnacle_output{}".format(seed)
-        # clean data directory
-        file_list = os.listdir("./data")
-        for file in file_list:
-            try:
-                os.remove(os.path.join("./data", file))
-            except:
-                continue
-        print("downloading pinancle zip data...")
+
+        # Check if required CSVs already exist
+        csv_files = [f for f in os.listdir("./data") if f.endswith(".csv") and f"_{split}_" in f]
+        if csv_files:
+            x = []
+            for file in csv_files:
+                df = pd.read_csv(f"./data/{file}")
+                cell = file.split("_")[-1].split(".")[0]
+                df["cell_type_label"] = cell
+                disease = "IBD" if "3767" in file else "RA"
+                df["disease"] = disease
+                x.append(df)
+            return pd.concat(x, axis=0, ignore_index=True)
+
+        # Previously used to delete everything from ./data
+        # file_list = os.listdir("./data")
+        # for file in file_list:
+        #     try:
+        #         os.remove(os.path.join("./data", file))
+        #     except:
+        #         continue
+        # print("downloading pinancle zip data...")
+
+        # Otherwise, download and extract
         zip_data_download_wrapper(
             filename, "./data",
             ["pinnacle_output{}".format(x) for x in range(1, 11)])
         print("success!")
-        # Get non-csv files and remove them
-        non_csv_files = [
-            f for f in os.listdir("./data") if not f.endswith(".csv")
-        ]
-        for x in non_csv_files:
-            try:
-                os.remove("./data/{}".format(x))
-            except:
-                continue
+
+        # Previously used to delete everything that is not a csv file from ./data
+        # non_csv_files = [
+        #     f for f in os.listdir("./data") if not f.endswith(".csv")
+        # ]
+        # for x in non_csv_files:
+        #     try:
+        #         os.remove("./data/{}".format(x))
+        #     except:
+        #         continue
+
+
         # Get a list of all CSV files in the unzipped folder
-        csv_files = [f for f in os.listdir("./data") if f.endswith(".csv")]
+        csv_files = [f for f in os.listdir("./data") if f.endswith(".csv") and f"_{split}_" in f]
         if not csv_files:
             raise Exception("no csv")
         x = []
         print("iterating over csv files...")
         for file in csv_files:
             print("got file {}".format(file))
-            if "_{}_".format(split) not in file:
-                os.remove("./data/{}".format(file))
-                continue
+            # if "_{}_".format(split) not in file:
+            #     os.remove("./data/{}".format(file))
+            #     continue
             print("reading into pandas...")
-            df = pd.read_csv("./data/{}".format(file))
-            cell = file.split("_")[-1]
-            cell = cell.split(".")[0]
+            df = pd.read_csv(f"./data/{file}")
+            cell = file.split("_")[-1].split(".")[0]
             df["cell_type_label"] = cell
             disease = "IBD" if "3767" in file else "RA"
             df["disease"] = disease
             x.append(df)
-            os.remove("./data/{}".format(file))
+            # os.remove("./data/{}".format(file))
         return pd.concat(x, axis=0, ignore_index=True)
