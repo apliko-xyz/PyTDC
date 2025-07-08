@@ -17,8 +17,7 @@ class PINNACLE:
 
         # Filenames to check if already downloaded
         ppi_file = os.path.join(path, self.ppi_name + ".txt")
-        cell_tissue_file = os.path.join(path,
-                                        self.cell_tissue_mg_name + ".txt")
+        cell_tissue_file = os.path.join(path, self.cell_tissue_mg_name + ".txt")
         embeds_file = os.path.join(path, "pinnacle_protein_embed.pth")
         labels_file = os.path.join(path, "pinnacle_labels_dict.txt")
 
@@ -65,8 +64,8 @@ class PINNACLE:
     def get_keys(self):
         protein_names_celltypes = [
             p for p in zip(self.keys["Cell Type"], self.keys["Name"])
-            if not (p[0].startswith("BTO") or p[0].startswith("CCI")
-                    or p[0].startswith("Sanity"))
+            if not (p[0].startswith("BTO") or p[0].startswith("CCI") or
+                    p[0].startswith("Sanity"))
         ]
         proteins = pd.DataFrame.from_dict({
             "target": [n for _, n in protein_names_celltypes],
@@ -99,9 +98,8 @@ class PINNACLE:
         df = pd.DataFrame.from_dict(x)
         df = df.transpose()
         assert len(df) == len(
-            x
-        ), "dims not mantained when translated to pandas. {} vs {}".format(
-            len(df), len(x))
+            x), "dims not mantained when translated to pandas. {} vs {}".format(
+                len(df), len(x))
         return df
 
     def get_exp_data(self, seed=1, split="train"):
