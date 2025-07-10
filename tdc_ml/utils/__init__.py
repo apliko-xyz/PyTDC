@@ -36,7 +36,6 @@ from .label import (
     convert_to_log,
     convert_back_log,
     binarize,
-    label_dist,
 )
 from .retrieve import (
     get_label_map,
