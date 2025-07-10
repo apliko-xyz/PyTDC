@@ -18,13 +18,6 @@ except:
         "Please install rdkit by 'conda install -c conda-forge rdkit'! ")
 
 from ...utils import print_sys
-from ..oracle.oracle import (
-    smiles_to_rdkit_mol,
-    smiles_2_fingerprint_ECFP4,
-    smiles_2_fingerprint_FCFP4,
-    smiles_2_fingerprint_AP,
-    smiles_2_fingerprint_ECFP6,
-)
 from ._smiles2pubchem import smiles2pubchem
 
 
@@ -145,25 +138,6 @@ def smiles2maccs(s):
 """
 
 
-def smiles2ECFP2(smiles):
-    """Convert smiles into ECFP2 Morgan Fingerprint.
-
-    Args:
-      smiles: str
-
-    Returns:
-      fp: rdkit.DataStructs.cDataStructs.UIntSparseIntVect
-
-    """
-    nbits = 2048
-    smiles = canonicalize(smiles)
-    molecule = smiles_to_rdkit_mol(smiles)
-    fp = AllChem.GetMorganFingerprintAsBitVect(molecule, 1, nBits=nbits)
-    arr = np.zeros((0,), dtype=np.float64)
-    DataStructs.ConvertToNumpyArray(fp, arr)
-    return arr
-
-
 def smiles2ECFP4(smiles):
     """Convert smiles into ECFP4 Morgan Fingerprint.
 
@@ -224,7 +198,6 @@ class MoleculeFingerprint:
 
     def __init__(self, fp="ECFP4"):
         fp2func = {
-            "ECFP2": smiles2ECFP2,
             "ECFP4": smiles2ECFP4,
             "ECFP6": smiles2ECFP6,
             "MACCS": smiles2maccs,
@@ -966,7 +939,9 @@ class MolConvert:
             elif dst == "DGL":
                 f2 = smiles2DGL
             elif dst == "ECFP2":
-                f2 = smiles2ECFP2
+                raise Exception(
+                    "ECFP2 is no longer supported, please use ECFP4 or ECFP6 instead."
+                )
             elif dst == "ECFP4":
                 f2 = smiles2ECFP4
             elif dst == "ECFP6":
