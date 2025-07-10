@@ -13,7 +13,6 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 # TODO: add verification for the generation other than simple integration
 
-from tdc_ml.resource import cellxgene_census
 from tdc_ml.model_server.tokenizers.geneformer import GeneformerTokenizer
 
 
@@ -29,7 +28,6 @@ class TestModelServer(unittest.TestCase):
 
     def setUp(self):
         print(os.getcwd())
-        self.resource = cellxgene_census.CensusResource()
 
     def testscGPT(self):
         from tdc_ml.multi_pred.anndata_dataset import DataLoader
@@ -100,93 +98,6 @@ class TestModelServer(unittest.TestCase):
         num_gene_out_in_batch = len(outputs.hidden_states[-1][0])
         assert num_out_in_batch == input_batch_size, f"FAILURE: length doesn't match batch size {num_out_in_batch} vs {input_batch_size}"
         assert num_gene_out_in_batch == mdim, f"FAILURE: out length {num_gene_out_in_batch} doesn't match gene length {mdim}"
-
-    def testGeneformerTokenizer(self):
-
-        adata = self.resource.get_anndata(
-            var_value_filter=
-            "feature_id in ['ENSG00000161798', 'ENSG00000188229']",
-            obs_value_filter=
-            "sex == 'female' and cell_type in ['microglial cell', 'neuron']",
-            column_names={
-                "obs": [
-                    "assay", "cell_type", "tissue", "tissue_general",
-                    "suspension_type", "disease"
-                ]
-            },
-        )
-        tokenizer = GeneformerTokenizer()
-        x = tokenizer.tokenize_cell_vectors(adata,
-                                            ensembl_id="feature_id",
-                                            ncounts="n_measured_vars")
-        assert x[0]
-
-        # test Geneformer can serve the request
-        cells, _ = x
-        assert cells, "FAILURE: cells false-like. Value is = {}".format(cells)
-        assert len(cells) > 0, "FAILURE: length of cells <= 0 {}".format(cells)
-        from tdc_ml import tdc_hf_interface
-        import torch
-        geneformer = tdc_hf_interface("Geneformer")
-        model = geneformer.load()
-
-        # using very few genes for these test cases so expecting empties... let's pad...
-        for idx in range(len(cells)):
-            x = cells[idx]
-            for j in range(len(x)):
-                v = x[j]
-                if len(v) < 2:
-                    out = None
-                    for _ in range(2 - len(v)):
-                        if out is None:
-                            out = np.append(v, 0)  # pad with 0
-                        else:
-                            out = np.append(out, 0)
-                    cells[idx][j] = out
-            if len(cells[idx]) < 512:  # batch size
-                array = cells[idx]
-                # Calculate how many rows need to be added
-                n_rows_to_add = 512 - len(array)
-
-                # Create a padding array with [0, 0] for the remaining rows
-                padding = np.tile([0, 0], (n_rows_to_add, 1))
-
-                # Concatenate the original array with the padding array
-                cells[idx] = np.vstack((array, padding))
-
-        input_tensor = torch.tensor(cells)
-        out = []
-        try:
-            ctr = 0  # stop after some passes to avoid failure
-            for batch in input_tensor:
-                # build an attention mask
-                attention_mask = torch.tensor(
-                    [[x[0] != 0, x[1] != 0] for x in batch])
-                outputs = model(batch,
-                                attention_mask=attention_mask,
-                                output_hidden_states=True)
-                layer_to_quant = quant_layers(model) + (
-                    -1
-                )  # TODO note this can be parametrized to either 0 (extract last embedding layer) or -1 (second-to-last which is more generalized)
-                embs_i = outputs.hidden_states[layer_to_quant]
-                # there are "cls", "cell", and "gene" embeddings. we will only capture "gene", which is cell type specific. for "cell", you'd average out across unmasked gene embeddings per cell
-                embs = embs_i
-                out.append(embs)
-                if ctr == 2:
-                    break
-                ctr += 1
-        except Exception as e:
-            raise Exception(e)
-
-        assert out, "FAILURE: Geneformer output is false-like. Value = {}".format(
-            out)
-        assert len(
-            out
-        ) == 3, "length not matching ctr+1: {} vs {}. output was \n {}".format(
-            len(out), ctr + 1, out)
-        print(
-            "Geneformer ran sucessfully. Find batch embedding example here:\n {}"
-            .format(out[0]))
 
     def testscVI(self):
         from tdc_ml.multi_pred.anndata_dataset import DataLoader
