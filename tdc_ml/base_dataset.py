@@ -85,10 +85,6 @@ class DataLoader:
         else:
             raise AttributeError("Please specify the correct splitting method")
 
-    def label_distribution(self):
-        """visualize distribution of labels"""
-        utils.label_dist(self.y, self.name)
-
     def binarize(self, threshold=None, order="descending"):
         """binarize the labels
 

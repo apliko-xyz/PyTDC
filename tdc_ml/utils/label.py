@@ -130,57 +130,6 @@ def binarize(y, threshold, order="ascending"):
     return y
 
 
-def label_dist(y, name=None):
-    """plot the distribution of label
-
-    Args:
-        y (list): a list of labels
-        name (None, optional): dataset name
-    """
-    try:
-        import seaborn as sns
-        import matplotlib.pyplot as plt
-    except:
-        from .misc import install
-
-        install("seaborn")
-        install("matplotlib")
-        import seaborn as sns
-        import matplotlib.pyplot as plt
-
-    median = np.median(y)
-    mean = np.mean(y)
-
-    f, (ax_box,
-        ax_hist) = plt.subplots(2,
-                                sharex=True,
-                                gridspec_kw={"height_ratios": (0.15, 1)})
-    f, (ax_box,
-        ax_hist) = plt.subplots(2,
-                                sharex=True,
-                                gridspec_kw={"height_ratios": (0.15, 1)})
-
-    if name is None:
-        sns.boxplot(y, ax=ax_box).set_title("Label Distribution")
-    else:
-        sns.boxplot(y, ax=ax_box).set_title("Label Distribution of " +
-                                            str(name) + " Dataset")
-        sns.boxplot(y, ax=ax_box).set_title("Label Distribution of " +
-                                            str(name) + " Dataset")
-    ax_box.axvline(median, color="b", linestyle="--")
-    ax_box.axvline(mean, color="g", linestyle="--")
-
-    sns.distplot(y, ax=ax_hist)
-    ax_hist.axvline(median, color="b", linestyle="--")
-    ax_hist.axvline(mean, color="g", linestyle="--")
-    ax_hist.legend({"Median": median, "Mean": mean})
-
-    ax_box.set(xlabel="")
-    plt.show()
-    # print("The median is " + str(median), flush = True, file = sys.stderr)
-    # print("The mean is " + str(mean), flush = True, file = sys.stderr)
-
-
 def NegSample(df, column_names, frac, two_types):
     """Negative Sampling for Binary Interaction Dataset
 
