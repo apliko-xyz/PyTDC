@@ -6,7 +6,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from .utils import fuzzy_search
-from .metadata import evaluator_name #distribution_oracles
+from .metadata import evaluator_name  #distribution_oracles
 
 try:
     from sklearn.metrics import (
