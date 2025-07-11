@@ -20,7 +20,6 @@
 # )
 # from ..evaluator import Evaluator
 
-
 # class docking_group(BenchmarkGroup):
 #     """Create a docking group benchmark loader.
 
@@ -30,7 +29,6 @@
 #         num_workers (int, optional): number of workers to parallelize dockings
 #         num_cpus (int, optional): number of CPUs assigned to docking
 #         num_max_call (int, optional): maximum number of oracle calls
-
 
 #     """
 
