@@ -6,7 +6,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from .utils import fuzzy_search
-from .metadata import evaluator_name, distribution_oracles
+from .metadata import evaluator_name #distribution_oracles
 
 try:
     from sklearn.metrics import (
@@ -465,8 +465,8 @@ class Evaluator:
         Returns:
             float: the evaluator output
         """
-        if self.name in distribution_oracles:
-            return self.evaluator_func(*args, **kwargs)
+        # if self.name in distribution_oracles:
+        #     return self.evaluator_func(*args, **kwargs)
         # 	#### evaluator for distribution learning, e.g., diversity, validity
         y_true = kwargs["y_true"] if "y_true" in kwargs else args[0]
         y_pred = kwargs["y_pred"] if "y_pred" in kwargs else args[1]
