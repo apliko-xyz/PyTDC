@@ -14,7 +14,7 @@ deeppurpose_repo = [
     'CYP3A4_Veith-AttentiveFP',
 ]
 
-model_hub = ["Geneformer", "scGPT", "scVI"]
+model_hub = ["Geneformer", "scGPT", "scVI", "scFoundation"]
 
 
 class tdc_hf_interface:
@@ -69,6 +69,11 @@ class tdc_hf_interface:
         elif self.model_name == "scVI":
             from .models.scvi import scVI
             model = scVI()
+            model.load()
+            return model
+        elif self.model_name == "scFoundation":
+            from .models.scfoundation import scFoundationModel
+            model = scFoundationModel()
             model.load()
             return model
         raise Exception("Not implemented yet!")
