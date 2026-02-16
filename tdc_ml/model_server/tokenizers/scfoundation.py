@@ -72,10 +72,12 @@ class scFoundationTokenizer:
             gene_df = pd.read_csv(local_path, header=0, delimiter='\t')
             return list(gene_df['gene_name'])
 
-        raise FileNotFoundError(
-            "Could not find scFoundation gene vocabulary. Please provide gene_vocab_path "
-            "or ensure the vocabulary file is available."
-        )
+        # Use loader to download gene vocabulary
+        from model_server.model_loaders.scfoundation_loader import scFoundationLoader
+        loader = scFoundationLoader()
+        vocab_path = loader.load_gene_vocab(self.data_path)
+        gene_df = pd.read_csv(vocab_path, header=0, delimiter='\t')
+        return list(gene_df['gene_name'])
 
     def _align_genes(
         self,

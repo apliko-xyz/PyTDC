@@ -517,5 +517,45 @@ class TestScFoundationIntegration(unittest.TestCase):
             self.assertEqual(tokens['encoder_data'].shape[0], n_cells)
 
 
+class TestScFoundationLoader(unittest.TestCase):
+    """Unit tests for scFoundationLoader."""
+
+    def test_loader_initialization(self):
+        """Test loader initializes correctly."""
+        from tdc_ml.model_server.model_loaders.scfoundation_loader import scFoundationLoader
+
+        loader = scFoundationLoader()
+        self.assertIsNotNone(loader)
+        self.assertTrue(hasattr(loader, 'CHECKPOINT_URL'))
+        self.assertTrue(hasattr(loader, 'GENE_VOCAB_URL'))
+
+    def test_checkpoint_url_valid(self):
+        """Test that checkpoint URL is accessible."""
+        from tdc_ml.model_server.model_loaders.scfoundation_loader import scFoundationLoader
+        import requests
+
+        loader = scFoundationLoader()
+
+        # HEAD request to check URL is valid without downloading
+        try:
+            response = requests.head(loader.CHECKPOINT_URL, allow_redirects=True, timeout=10)
+            self.assertIn(response.status_code, [200, 202, 302, 303])
+        except requests.exceptions.RequestException:
+            self.skipTest("Network unavailable")
+
+    def test_gene_vocab_url_valid(self):
+        """Test that gene vocabulary URL is accessible."""
+        from tdc_ml.model_server.model_loaders.scfoundation_loader import scFoundationLoader
+        import requests
+
+        loader = scFoundationLoader()
+
+        try:
+            response = requests.head(loader.GENE_VOCAB_URL, allow_redirects=True, timeout=10)
+            self.assertIn(response.status_code, [200, 202, 302, 303])
+        except requests.exceptions.RequestException:
+            self.skipTest("Network unavailable")
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -796,10 +796,10 @@ class scFoundationModel(nn.Module):
                     break
 
         if checkpoint_path is None or not os.path.exists(checkpoint_path):
-            raise FileNotFoundError(
-                f"Could not find scFoundation checkpoint. Please provide checkpoint_path "
-                f"or download from https://figshare.com/articles/software/models_ckpt/24048206"
-            )
+            # Use loader to download checkpoint
+            from model_server.model_loaders.scfoundation_loader import scFoundationLoader
+            loader = scFoundationLoader()
+            checkpoint_path = loader.load()
 
         print(f"Loading scFoundation weights from {checkpoint_path}")
         model_data = torch.load(checkpoint_path, map_location='cpu')
