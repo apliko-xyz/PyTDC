@@ -1,5 +1,3 @@
-# Copyright 2023 BioMap (Beijing) Intelligence Technology Limited
-# Adapted for PyTDC integration
 
 import math
 import os
@@ -18,9 +16,6 @@ except ImportError:
     raise ImportError("einops is required for scFoundation. Install with: pip install einops")
 
 
-# =============================================================================
-# Configuration
-# =============================================================================
 
 @dataclass
 class scFoundationConfig:
@@ -52,9 +47,7 @@ class scFoundationConfig:
     attn_dropout: float = 0.0
 
 
-# =============================================================================
-# Helper Functions
-# =============================================================================
+
 
 def exists(val):
     return val is not None
@@ -84,9 +77,8 @@ def find_modules(nn_module, type):
     return [module for module in nn_module.modules() if isinstance(module, type)]
 
 
-# =============================================================================
-# Kernel Functions for Performer Attention
-# =============================================================================
+
+
 
 def softmax_kernel(data, *, projection_matrix, is_query, normalize_data=True, eps=1e-4, device=None):
     """Compute softmax kernel for Performer attention."""
@@ -180,9 +172,8 @@ def linear_attention(q, k, v):
     return out
 
 
-# =============================================================================
-# Attention Components
-# =============================================================================
+
+
 
 class FastAttention(nn.Module):
     """
@@ -414,9 +405,8 @@ class SelfAttention(nn.Module):
         return self.dropout(out)
 
 
-# =============================================================================
-# Sequential Layer Execution
-# =============================================================================
+
+
 
 def route_args(router, args, depth):
     """Route arguments to appropriate layers."""
@@ -462,9 +452,7 @@ class SequentialSequence(nn.Module):
         return x
 
 
-# =============================================================================
-# Performer Transformer
-# =============================================================================
+
 
 class Performer(nn.Module):
     """Performer transformer with linear attention."""
@@ -615,9 +603,8 @@ class PerformerModule(nn.Module):
             return x
 
 
-# =============================================================================
-# Token Embedding
-# =============================================================================
+
+
 
 class AutoDiscretizationEmbedding(nn.Module):
     """
@@ -708,9 +695,8 @@ class AutoDiscretizationEmbedding(nn.Module):
         return x
 
 
-# =============================================================================
-# Main Model
-# =============================================================================
+
+
 
 class scFoundationModel(nn.Module):
     """
