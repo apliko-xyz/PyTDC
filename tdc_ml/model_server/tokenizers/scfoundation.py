@@ -7,9 +7,6 @@ import pandas as pd
 import torch
 from typing import Dict, List, Optional, Tuple, Union
 
-from ...utils.load import download_wrapper
-
-
 class scFoundationTokenizer:
     """
     Tokenizer for scFoundation single-cell foundation model.
@@ -55,25 +52,14 @@ class scFoundationTokenizer:
             gene_df = pd.read_csv(gene_vocab_path, header=0, delimiter='\t')
             return list(gene_df['gene_name'])
 
-        # Try to download from TDC storage
-        try:
-            download_wrapper("scfoundation_gene_vocab", self.data_path,
-                           ["scfoundation_gene_vocab"])
-            vocab_path = os.path.join(self.data_path, "scfoundation_gene_vocab.tsv")
-            if os.path.exists(vocab_path):
-                gene_df = pd.read_csv(vocab_path, header=0, delimiter='\t')
-                return list(gene_df['gene_name'])
-        except Exception:
-            pass
-
-        # Fallback: try local scFoundation path
+        # Try local scFoundation path
         local_path = os.path.expanduser("~/scFoundation/model/OS_scRNA_gene_index.19264.tsv")
         if os.path.exists(local_path):
             gene_df = pd.read_csv(local_path, header=0, delimiter='\t')
             return list(gene_df['gene_name'])
 
         # Use loader to download gene vocabulary
-        from model_server.model_loaders.scfoundation_loader import scFoundationLoader
+        from ..model_loaders.scfoundation_loader import scFoundationLoader
         loader = scFoundationLoader()
         vocab_path = loader.load_gene_vocab(self.data_path)
         gene_df = pd.read_csv(vocab_path, header=0, delimiter='\t')
