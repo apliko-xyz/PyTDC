@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 import sys
 
 from ..utils import print_sys
-from .single_cell import CellXGeneTemplate
+from .anndata_dataset import DataLoader as CellXGeneTemplate
 from ..dataset_configs.config_map import scperturb_gene_datasets
 
 

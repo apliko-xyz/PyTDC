@@ -113,6 +113,41 @@ class TestModelServer(unittest.TestCase):
         output = model(adata)
         print(f"scVI ran successfully. here is an ouput: {output}")
 
+    def testscFoundation(self):
+        from tdc_ml.multi_pred.anndata_dataset import DataLoader
+        from tdc_ml import tdc_hf_interface
+        from tdc_ml.model_server.tokenizers.scfoundation import scFoundationTokenizer
+        import torch
+
+        adata = DataLoader("cellxgene_sample_small",
+                           "./data",
+                           dataset_names=["cellxgene_sample_small"],
+                           no_convert=True).adata
+
+        scfoundation = tdc_hf_interface("scFoundation")
+        model = scfoundation.load()
+        model.eval()
+
+        tokenizer = scFoundationTokenizer()
+        gene_ids = adata.var["feature_name"].to_numpy()
+        tokens = tokenizer.tokenize_cell_vectors(
+            adata.X.toarray(), gene_ids, return_tensors='pt')
+
+        with torch.no_grad():
+            emb = model.get_cell_embedding(
+                tokens['encoder_data'],
+                tokens['encoder_position_gene_ids'],
+                tokens['encoder_padding_mask'],
+                pool_type='all'
+            )
+
+        n_cells = adata.X.shape[0]
+        assert emb.shape == (n_cells, 3072), \
+            f"FAILURE: unexpected embedding shape {emb.shape}"
+        assert not torch.isnan(emb).any(), "FAILURE: embedding contains NaN"
+        assert not torch.isinf(emb).any(), "FAILURE: embedding contains Inf"
+        print(f"scFoundation ran successfully. Embedding shape: {emb.shape}")
+
     def tearDown(self):
         try:
             print(os.getcwd())

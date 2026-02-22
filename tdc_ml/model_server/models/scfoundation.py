@@ -34,7 +34,7 @@ class scFoundationConfig:
 
     # Embedding
     num_genes: int = 19264
-    max_seq_len: int = 19265
+    max_seq_len: int = 19266
     bin_num: int = 100
     bin_alpha: float = 1.0
 
@@ -765,27 +765,18 @@ class scFoundationModel(nn.Module):
         """
         Load model weights from checkpoint.
 
+        Weights are stored at ./scfoundation_model/models.ckpt inside the PyTDC
+        directory (same pattern as scVI's ./scvi_model/). Download the checkpoint
+        manually from SharePoint and place it there before calling this method.
+
         Args:
-            checkpoint_path: Path to checkpoint file. If None, attempts to download.
+            checkpoint_path: Explicit path to models.ckpt. If None, uses the loader
+                             to locate ./scfoundation_model/models.ckpt.
             key: Key in checkpoint dict ('cell', 'gene', 'rde').
         """
-        if checkpoint_path is None:
-            # Try to find checkpoint
-            default_paths = [
-                os.path.expanduser("~/scFoundation/model/models/models.ckpt"),
-                "./models/models.ckpt",
-                "models.ckpt"
-            ]
-            for path in default_paths:
-                if os.path.exists(path):
-                    checkpoint_path = path
-                    break
-
-        if checkpoint_path is None or not os.path.exists(checkpoint_path):
-            # Use loader to download checkpoint
-            from model_server.model_loaders.scfoundation_loader import scFoundationLoader
-            loader = scFoundationLoader()
-            checkpoint_path = loader.load()
+        from tdc_ml.model_server.model_loaders.scfoundation_loader import scFoundationLoader
+        loader = scFoundationLoader()
+        checkpoint_path = loader.load(checkpoint_path=checkpoint_path)
 
         print(f"Loading scFoundation weights from {checkpoint_path}")
         model_data = torch.load(checkpoint_path, map_location='cpu')
