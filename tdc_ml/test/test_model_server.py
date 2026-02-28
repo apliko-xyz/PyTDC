@@ -134,8 +134,9 @@ class TestModelServer(unittest.TestCase):
 
         tokenizer = scFoundationTokenizer()
         gene_ids = adata.var["feature_name"].to_numpy()
-        tokens = tokenizer.tokenize_cell_vectors(
-            adata.X.toarray(), gene_ids, return_tensors='pt')
+        tokens = tokenizer.tokenize_cell_vectors(adata.X.toarray(),
+                                                 gene_ids,
+                                                 return_tensors='pt')
 
         n_cells = adata.X.shape[0]
         batch_size = 8
@@ -144,10 +145,10 @@ class TestModelServer(unittest.TestCase):
             for i in range(0, n_cells, batch_size):
                 batch_emb = model.get_cell_embedding(
                     tokens['encoder_data'][i:i + batch_size].to(device),
-                    tokens['encoder_position_gene_ids'][i:i + batch_size].to(device),
+                    tokens['encoder_position_gene_ids'][i:i +
+                                                        batch_size].to(device),
                     tokens['encoder_padding_mask'][i:i + batch_size].to(device),
-                    pool_type='all'
-                )
+                    pool_type='all')
                 all_embs.append(batch_emb.cpu())
         emb = torch.cat(all_embs, dim=0)
         assert emb.shape == (n_cells, 3072), \

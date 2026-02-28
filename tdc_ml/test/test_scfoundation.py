@@ -62,7 +62,8 @@ class TestScFoundationTokenizer(unittest.TestCase):
         # Create mock expression data with subset of genes
         n_cells = 5
         test_genes = ['A1BG', 'TP53', 'BRCA1', 'UNKNOWN_GENE']
-        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(np.float32)
+        expr_matrix = np.random.rand(n_cells,
+                                     len(test_genes)).astype(np.float32)
 
         aligned, missing = self.tokenizer._align_genes(expr_matrix, test_genes)
 
@@ -72,8 +73,8 @@ class TestScFoundationTokenizer(unittest.TestCase):
         # Check that known genes have values at correct positions
         a1bg_idx = self.tokenizer.gene_to_idx.get('A1BG')
         if a1bg_idx is not None:
-            np.testing.assert_array_almost_equal(
-                aligned[:, a1bg_idx], expr_matrix[:, 0])
+            np.testing.assert_array_almost_equal(aligned[:, a1bg_idx],
+                                                 expr_matrix[:, 0])
 
         # UNKNOWN_GENE should not be in missing (it wasn't in vocab to begin with)
         # Missing genes are vocab genes not in input
@@ -85,18 +86,20 @@ class TestScFoundationTokenizer(unittest.TestCase):
             self.skipTest("Tokenizer not available")
 
         # Raw count data
-        expr = np.array([[100, 200, 300],
-                         [50, 100, 150]], dtype=np.float32)
+        expr = np.array([[100, 200, 300], [50, 100, 150]], dtype=np.float32)
 
-        normalized = self.tokenizer._normalize_expression(
-            expr, target_sum=10000, pre_normalized='F')
+        normalized = self.tokenizer._normalize_expression(expr,
+                                                          target_sum=10000,
+                                                          pre_normalized='F')
 
         # Check normalization was applied
         self.assertEqual(normalized.shape, expr.shape)
 
         # Values should be log-transformed
         expected_row0 = np.log1p(expr[0, :] / expr[0, :].sum() * 10000)
-        np.testing.assert_array_almost_equal(normalized[0, :], expected_row0, decimal=5)
+        np.testing.assert_array_almost_equal(normalized[0, :],
+                                             expected_row0,
+                                             decimal=5)
 
     def test_normalization_prenormalized(self):
         """Test handling of pre-normalized data."""
@@ -104,11 +107,11 @@ class TestScFoundationTokenizer(unittest.TestCase):
             self.skipTest("Tokenizer not available")
 
         # Already normalized data
-        expr = np.array([[1.5, 2.0, 2.5],
-                         [1.0, 1.5, 2.0]], dtype=np.float32)
+        expr = np.array([[1.5, 2.0, 2.5], [1.0, 1.5, 2.0]], dtype=np.float32)
 
-        normalized = self.tokenizer._normalize_expression(
-            expr, target_sum=10000, pre_normalized='T')
+        normalized = self.tokenizer._normalize_expression(expr,
+                                                          target_sum=10000,
+                                                          pre_normalized='T')
 
         # Should be unchanged
         np.testing.assert_array_equal(normalized, expr)
@@ -119,10 +122,9 @@ class TestScFoundationTokenizer(unittest.TestCase):
             self.skipTest("Tokenizer not available")
 
         # Create expression with some zeros
-        expr = torch.tensor([
-            [0.0, 1.5, 0.0, 2.0, 0.0],
-            [1.0, 0.0, 1.5, 0.0, 2.0]
-        ], dtype=torch.float32)
+        expr = torch.tensor(
+            [[0.0, 1.5, 0.0, 2.0, 0.0], [1.0, 0.0, 1.5, 0.0, 2.0]],
+            dtype=torch.float32)
 
         gathered, padding_mask, position_ids = self.tokenizer._gather_expressed_genes(
             expr, pad_token_id=self.tokenizer.pad_token_id)
@@ -147,18 +149,18 @@ class TestScFoundationTokenizer(unittest.TestCase):
         # Create minimal test data
         n_cells = 3
         test_genes = self.tokenizer.gene_vocab[:100]  # First 100 genes
-        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(np.float32)
+        expr_matrix = np.random.rand(n_cells,
+                                     len(test_genes)).astype(np.float32)
         expr_matrix = expr_matrix * 100  # Scale to count-like values
 
         # Set some values to zero for sparsity
         expr_matrix[expr_matrix < 50] = 0
 
-        result = self.tokenizer.tokenize_cell_vectors(
-            expr_matrix, test_genes,
-            target_sum=10000,
-            pre_normalized='F',
-            return_tensors='pt'
-        )
+        result = self.tokenizer.tokenize_cell_vectors(expr_matrix,
+                                                      test_genes,
+                                                      target_sum=10000,
+                                                      pre_normalized='F',
+                                                      return_tensors='pt')
 
         # Check output keys
         self.assertIn('encoder_data', result)
@@ -182,13 +184,13 @@ class TestScFoundationTokenizer(unittest.TestCase):
 
         n_cells = 2
         test_genes = self.tokenizer.gene_vocab[:50]
-        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(np.float32) * 100
+        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(
+            np.float32) * 100
 
-        result = self.tokenizer.tokenize_cell_vectors(
-            expr_matrix, test_genes,
-            include_decoder=True,
-            return_tensors='pt'
-        )
+        result = self.tokenizer.tokenize_cell_vectors(expr_matrix,
+                                                      test_genes,
+                                                      include_decoder=True,
+                                                      return_tensors='pt')
 
         # Check decoder outputs are present
         self.assertIn('decoder_data', result)
@@ -213,9 +215,8 @@ class TestScFoundationModel(unittest.TestCase):
 
     def test_model_initialization(self):
         """Test model initializes correctly with default config."""
-        from tdc_ml.model_server.models.scfoundation import (
-            scFoundationModel, scFoundationConfig
-        )
+        from tdc_ml.model_server.models.scfoundation import (scFoundationModel,
+                                                             scFoundationConfig)
 
         model = scFoundationModel()
 
@@ -229,16 +230,13 @@ class TestScFoundationModel(unittest.TestCase):
 
     def test_model_with_custom_config(self):
         """Test model initialization with custom config."""
-        from tdc_ml.model_server.models.scfoundation import (
-            scFoundationModel, scFoundationConfig
-        )
+        from tdc_ml.model_server.models.scfoundation import (scFoundationModel,
+                                                             scFoundationConfig)
 
-        config = scFoundationConfig(
-            encoder_depth=6,
-            decoder_depth=3,
-            encoder_hidden_dim=384,
-            decoder_hidden_dim=256
-        )
+        config = scFoundationConfig(encoder_depth=6,
+                                    decoder_depth=3,
+                                    encoder_hidden_dim=384,
+                                    decoder_hidden_dim=256)
         model = scFoundationModel(config)
 
         # Check encoder dimension
@@ -249,14 +247,12 @@ class TestScFoundationModel(unittest.TestCase):
         """Test AutoDiscretizationEmbedding forward pass."""
         from tdc_ml.model_server.models.scfoundation import AutoDiscretizationEmbedding
 
-        embed = AutoDiscretizationEmbedding(
-            dim=768,
-            max_seq_len=100,
-            bin_num=100,
-            bin_alpha=1.0,
-            pad_token_id=99,
-            mask_token_id=100
-        )
+        embed = AutoDiscretizationEmbedding(dim=768,
+                                            max_seq_len=100,
+                                            bin_num=100,
+                                            bin_alpha=1.0,
+                                            pad_token_id=99,
+                                            mask_token_id=100)
 
         # Test with normal values
         x = torch.randn(2, 50, 1)
@@ -306,13 +302,11 @@ class TestScFoundationModel(unittest.TestCase):
         """Test PerformerModule forward pass."""
         from tdc_ml.model_server.models.scfoundation import PerformerModule
 
-        performer = PerformerModule(
-            max_seq_len=200,
-            dim=768,
-            depth=2,
-            heads=12,
-            dim_head=64
-        )
+        performer = PerformerModule(max_seq_len=200,
+                                    dim=768,
+                                    depth=2,
+                                    heads=12,
+                                    dim_head=64)
 
         x = torch.randn(2, 100, 768)
         out = performer(x)
@@ -320,21 +314,18 @@ class TestScFoundationModel(unittest.TestCase):
 
     def test_model_forward_shapes(self):
         """Test model forward pass produces correct output shapes."""
-        from tdc_ml.model_server.models.scfoundation import (
-            scFoundationModel, scFoundationConfig
-        )
+        from tdc_ml.model_server.models.scfoundation import (scFoundationModel,
+                                                             scFoundationConfig)
 
         # Use smaller config for faster testing
-        config = scFoundationConfig(
-            encoder_depth=2,
-            decoder_depth=2,
-            encoder_hidden_dim=256,
-            decoder_hidden_dim=128,
-            encoder_heads=4,
-            decoder_heads=4,
-            num_genes=100,
-            max_seq_len=105
-        )
+        config = scFoundationConfig(encoder_depth=2,
+                                    decoder_depth=2,
+                                    encoder_hidden_dim=256,
+                                    decoder_hidden_dim=128,
+                                    encoder_heads=4,
+                                    decoder_heads=4,
+                                    num_genes=100,
+                                    max_seq_len=105)
         model = scFoundationModel(config)
 
         batch_size = 2
@@ -343,71 +334,75 @@ class TestScFoundationModel(unittest.TestCase):
 
         # Create mock inputs
         encoder_data = torch.randn(batch_size, encoder_seq_len)
-        encoder_position_ids = torch.arange(encoder_seq_len).unsqueeze(0).repeat(batch_size, 1)
-        encoder_padding = torch.zeros(batch_size, encoder_seq_len, dtype=torch.bool)
+        encoder_position_ids = torch.arange(encoder_seq_len).unsqueeze(
+            0).repeat(batch_size, 1)
+        encoder_padding = torch.zeros(batch_size,
+                                      encoder_seq_len,
+                                      dtype=torch.bool)
 
         decoder_data = torch.randn(batch_size, decoder_seq_len)
-        decoder_position_ids = torch.arange(decoder_seq_len).unsqueeze(0).repeat(batch_size, 1)
-        decoder_padding = torch.zeros(batch_size, decoder_seq_len, dtype=torch.bool)
+        decoder_position_ids = torch.arange(decoder_seq_len).unsqueeze(
+            0).repeat(batch_size, 1)
+        decoder_padding = torch.zeros(batch_size,
+                                      decoder_seq_len,
+                                      dtype=torch.bool)
 
-        encoder_labels = torch.zeros(batch_size, decoder_seq_len, dtype=torch.bool)
+        encoder_labels = torch.zeros(batch_size,
+                                     decoder_seq_len,
+                                     dtype=torch.bool)
         encoder_labels[:, :encoder_seq_len] = True
 
         # Forward pass
-        out = model(
-            x=encoder_data,
-            padding_label=encoder_padding,
-            encoder_position_gene_ids=encoder_position_ids,
-            encoder_labels=encoder_labels,
-            decoder_data=decoder_data,
-            decoder_position_gene_ids=decoder_position_ids,
-            decoder_data_padding_labels=decoder_padding
-        )
+        out = model(x=encoder_data,
+                    padding_label=encoder_padding,
+                    encoder_position_gene_ids=encoder_position_ids,
+                    encoder_labels=encoder_labels,
+                    decoder_data=decoder_data,
+                    decoder_position_gene_ids=decoder_position_ids,
+                    decoder_data_padding_labels=decoder_padding)
 
         self.assertEqual(out.shape, (batch_size, decoder_seq_len))
 
     def test_get_cell_embedding(self):
         """Test cell embedding extraction."""
-        from tdc_ml.model_server.models.scfoundation import (
-            scFoundationModel, scFoundationConfig
-        )
+        from tdc_ml.model_server.models.scfoundation import (scFoundationModel,
+                                                             scFoundationConfig)
 
-        config = scFoundationConfig(
-            encoder_depth=2,
-            encoder_hidden_dim=256,
-            encoder_heads=4,
-            num_genes=100,
-            max_seq_len=105
-        )
+        config = scFoundationConfig(encoder_depth=2,
+                                    encoder_hidden_dim=256,
+                                    encoder_heads=4,
+                                    num_genes=100,
+                                    max_seq_len=105)
         model = scFoundationModel(config)
 
         batch_size = 2
         seq_len = 20
 
         encoder_data = torch.randn(batch_size, seq_len)
-        encoder_position_ids = torch.arange(seq_len).unsqueeze(0).repeat(batch_size, 1)
+        encoder_position_ids = torch.arange(seq_len).unsqueeze(0).repeat(
+            batch_size, 1)
         encoder_padding = torch.zeros(batch_size, seq_len, dtype=torch.bool)
 
         # Test 'all' pooling
-        emb_all = model.get_cell_embedding(
-            encoder_data, encoder_position_ids, encoder_padding,
-            pool_type='all'
-        )
+        emb_all = model.get_cell_embedding(encoder_data,
+                                           encoder_position_ids,
+                                           encoder_padding,
+                                           pool_type='all')
         # 4 * encoder_hidden_dim = 4 * 256 = 1024
         self.assertEqual(emb_all.shape, (batch_size, 1024))
 
         # Test 'max' pooling
-        emb_max = model.get_cell_embedding(
-            encoder_data, encoder_position_ids, encoder_padding,
-            pool_type='max'
-        )
+        emb_max = model.get_cell_embedding(encoder_data,
+                                           encoder_position_ids,
+                                           encoder_padding,
+                                           pool_type='max')
         self.assertEqual(emb_max.shape, (batch_size, 256))
 
         # Test 'mean' pooling
-        emb_mean = model.get_cell_embedding(
-            encoder_data, encoder_position_ids, encoder_padding,
-            pool_type='mean'
-        )
+        emb_mean = model.get_cell_embedding(encoder_data,
+                                            encoder_position_ids,
+                                            encoder_padding,
+                                            pool_type='mean')
         self.assertEqual(emb_mean.shape, (batch_size, 256))
 
 
@@ -430,40 +425,35 @@ class TestScFoundationIntegration(unittest.TestCase):
         if not self.tokenizer_available:
             self.skipTest("Tokenizer not available")
 
-        from tdc_ml.model_server.models.scfoundation import (
-            scFoundationModel, scFoundationConfig
-        )
+        from tdc_ml.model_server.models.scfoundation import (scFoundationModel,
+                                                             scFoundationConfig)
 
         # Use smaller config for testing
-        config = scFoundationConfig(
-            encoder_depth=2,
-            decoder_depth=2,
-            encoder_hidden_dim=256,
-            decoder_hidden_dim=128,
-            encoder_heads=4,
-            decoder_heads=4
-        )
+        config = scFoundationConfig(encoder_depth=2,
+                                    decoder_depth=2,
+                                    encoder_hidden_dim=256,
+                                    decoder_hidden_dim=128,
+                                    encoder_heads=4,
+                                    decoder_heads=4)
         model = scFoundationModel(config)
 
         # Create test expression data
         n_cells = 3
         test_genes = self.tokenizer.gene_vocab[:500]
-        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(np.float32) * 100
+        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(
+            np.float32) * 100
         expr_matrix[expr_matrix < 50] = 0  # Add sparsity
 
         # Tokenize
-        tokens = self.tokenizer.tokenize_cell_vectors(
-            expr_matrix, test_genes,
-            return_tensors='pt'
-        )
+        tokens = self.tokenizer.tokenize_cell_vectors(expr_matrix,
+                                                      test_genes,
+                                                      return_tensors='pt')
 
         # Get cell embeddings
-        cell_emb = model.get_cell_embedding(
-            tokens['encoder_data'],
-            tokens['encoder_position_gene_ids'],
-            tokens['encoder_padding_mask'],
-            pool_type='all'
-        )
+        cell_emb = model.get_cell_embedding(tokens['encoder_data'],
+                                            tokens['encoder_position_gene_ids'],
+                                            tokens['encoder_padding_mask'],
+                                            pool_type='all')
 
         self.assertEqual(cell_emb.shape[0], n_cells)
         # 4 * 256 = 1024
@@ -491,10 +481,9 @@ class TestScFoundationIntegration(unittest.TestCase):
         sparse_matrix = sp.csr_matrix(dense)
 
         # Should handle sparse input
-        tokens = self.tokenizer.tokenize_cell_vectors(
-            sparse_matrix, test_genes,
-            return_tensors='pt'
-        )
+        tokens = self.tokenizer.tokenize_cell_vectors(sparse_matrix,
+                                                      test_genes,
+                                                      return_tensors='pt')
 
         self.assertEqual(tokens['encoder_data'].shape[0], n_cells)
 
@@ -505,15 +494,16 @@ class TestScFoundationIntegration(unittest.TestCase):
 
         n_cells = 2
         test_genes = self.tokenizer.gene_vocab[:50]
-        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(np.float32) * 100
+        expr_matrix = np.random.rand(n_cells, len(test_genes)).astype(
+            np.float32) * 100
 
         # Test different resolution formats
         for res_format in ['t4', 'f2', 'a1.0']:
             tokens = self.tokenizer.tokenize_cell_vectors(
-                expr_matrix, test_genes,
+                expr_matrix,
+                test_genes,
                 tgt_high_res=res_format,
-                return_tensors='pt'
-            )
+                return_tensors='pt')
             self.assertEqual(tokens['encoder_data'].shape[0], n_cells)
 
 
@@ -544,7 +534,9 @@ class TestScFoundationLoader(unittest.TestCase):
         loader = scFoundationLoader()
 
         try:
-            response = requests.head(loader.GENE_VOCAB_URL, allow_redirects=True, timeout=10)
+            response = requests.head(loader.GENE_VOCAB_URL,
+                                     allow_redirects=True,
+                                     timeout=10)
             self.assertIn(response.status_code, [200, 202, 302, 303])
         except requests.exceptions.RequestException:
             self.skipTest("Network unavailable")

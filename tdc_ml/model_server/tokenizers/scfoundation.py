@@ -7,6 +7,7 @@ import pandas as pd
 import torch
 from typing import Dict, List, Optional, Tuple, Union
 
+
 class scFoundationTokenizer:
     """
     Tokenizer for scFoundation single-cell foundation model.
@@ -23,7 +24,9 @@ class scFoundationTokenizer:
     MASK_TOKEN_ID = 19265
     SEQ_LEN = 19264
 
-    def __init__(self, gene_vocab_path: Optional[str] = None, data_path: str = "./data"):
+    def __init__(self,
+                 gene_vocab_path: Optional[str] = None,
+                 data_path: str = "./data"):
         """
         Initialize the scFoundation tokenizer.
 
@@ -33,12 +36,15 @@ class scFoundationTokenizer:
         """
         self.data_path = data_path
         self.gene_vocab = self._load_gene_vocab(gene_vocab_path)
-        self.gene_to_idx = {gene: idx for idx, gene in enumerate(self.gene_vocab)}
+        self.gene_to_idx = {
+            gene: idx for idx, gene in enumerate(self.gene_vocab)
+        }
         self.pad_token_id = self.PAD_TOKEN_ID
         self.mask_token_id = self.MASK_TOKEN_ID
         self.seq_len = self.SEQ_LEN
 
-    def _load_gene_vocab(self, gene_vocab_path: Optional[str] = None) -> List[str]:
+    def _load_gene_vocab(self,
+                         gene_vocab_path: Optional[str] = None) -> List[str]:
         """
         Load the 19,264 gene vocabulary.
 
@@ -53,7 +59,8 @@ class scFoundationTokenizer:
             return list(gene_df['gene_name'])
 
         # Try local scFoundation path
-        local_path = os.path.expanduser("~/scFoundation/model/OS_scRNA_gene_index.19264.tsv")
+        local_path = os.path.expanduser(
+            "~/scFoundation/model/OS_scRNA_gene_index.19264.tsv")
         if os.path.exists(local_path):
             gene_df = pd.read_csv(local_path, header=0, delimiter='\t')
             return list(gene_df['gene_name'])
@@ -66,10 +73,9 @@ class scFoundationTokenizer:
         return list(gene_df['gene_name'])
 
     def _align_genes(
-        self,
-        expression_matrix: np.ndarray,
-        gene_names: Union[List[str], np.ndarray]
-    ) -> Tuple[np.ndarray, List[str]]:
+        self, expression_matrix: np.ndarray,
+        gene_names: Union[List[str],
+                          np.ndarray]) -> Tuple[np.ndarray, List[str]]:
         """
         Align input genes to model's 19,264 gene vocabulary.
 
@@ -103,12 +109,10 @@ class scFoundationTokenizer:
 
         return aligned_matrix, missing_genes
 
-    def _normalize_expression(
-        self,
-        expression: np.ndarray,
-        target_sum: int = 10000,
-        pre_normalized: str = 'F'
-    ) -> np.ndarray:
+    def _normalize_expression(self,
+                              expression: np.ndarray,
+                              target_sum: int = 10000,
+                              pre_normalized: str = 'F') -> np.ndarray:
         """
         Apply log1p(CPM) normalization to expression values.
 
@@ -130,14 +134,13 @@ class scFoundationTokenizer:
         else:
             # Apply log1p(CPM) normalization: log1p(expr / sum * target_sum)
             row_sums = expression.sum(axis=1, keepdims=True)
-            row_sums = np.where(row_sums == 0, 1, row_sums)  # Avoid division by zero
+            row_sums = np.where(row_sums == 0, 1,
+                                row_sums)  # Avoid division by zero
             normalized = np.log1p(expression / row_sums * target_sum)
             return normalized.astype(np.float32)
 
     def _gather_expressed_genes(
-        self,
-        expression: torch.Tensor,
-        pad_token_id: int
+            self, expression: torch.Tensor, pad_token_id: int
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Gather non-zero (expressed) genes for sparse representation.
@@ -165,8 +168,10 @@ class scFoundationTokenizer:
             max_num = 1
 
         # Create padded data tensor
-        fake_data = torch.full((batch_size, max_num), pad_token_id,
-                               device=device, dtype=expression.dtype)
+        fake_data = torch.full((batch_size, max_num),
+                               pad_token_id,
+                               device=device,
+                               dtype=expression.dtype)
         padded_data = torch.hstack([expression, fake_data])
 
         # Create label tensor for sorting
@@ -178,8 +183,8 @@ class scFoundationTokenizer:
         # Add position-based offset for stable sorting
         tmp_data = torch.tensor(
             [(i + 1) * 20000 for i in range(value_labels.shape[1], 0, -1)],
-            device=device, dtype=labels.dtype
-        )
+            device=device,
+            dtype=labels.dtype)
         labels = labels + tmp_data
         labels = torch.hstack([labels, fake_label])
 
@@ -193,8 +198,11 @@ class scFoundationTokenizer:
         padding_mask = (gathered_data == pad_token_id)
 
         # Create position gene IDs
-        gene_ids = torch.arange(expression.shape[1], device=device).repeat(batch_size, 1)
-        fake_gene_ids = torch.full((batch_size, max_num), self.seq_len, device=device)
+        gene_ids = torch.arange(expression.shape[1],
+                                device=device).repeat(batch_size, 1)
+        fake_gene_ids = torch.full((batch_size, max_num),
+                                   self.seq_len,
+                                   device=device)
         padded_gene_ids = torch.hstack([gene_ids, fake_gene_ids])
         position_gene_ids = torch.gather(padded_gene_ids, 1, topk_indices)
 
@@ -204,10 +212,8 @@ class scFoundationTokenizer:
         return gathered_data, padding_mask, position_gene_ids
 
     def _prepare_encoder_decoder_data(
-        self,
-        expression: torch.Tensor,
-        raw_expression: torch.Tensor
-    ) -> Dict[str, torch.Tensor]:
+            self, expression: torch.Tensor,
+            raw_expression: torch.Tensor) -> Dict[str, torch.Tensor]:
         """
         Prepare data for both encoder and decoder.
 
@@ -223,9 +229,10 @@ class scFoundationTokenizer:
 
         # Decoder uses full sequence
         decoder_data = expression.clone()
-        decoder_padding_mask = torch.zeros(
-            batch_size, self.NUM_GENES, dtype=torch.bool, device=device
-        )
+        decoder_padding_mask = torch.zeros(batch_size,
+                                           self.NUM_GENES,
+                                           dtype=torch.bool,
+                                           device=device)
 
         # Encoder uses gathered (sparse) data
         encoder_labels = raw_expression > 0
@@ -233,9 +240,9 @@ class scFoundationTokenizer:
             self._gather_expressed_genes(decoder_data, self.pad_token_id)
 
         # Decoder position gene IDs
-        decoder_position_gene_ids = torch.arange(
-            self.NUM_GENES, device=device
-        ).repeat(batch_size, 1)
+        decoder_position_gene_ids = torch.arange(self.NUM_GENES,
+                                                 device=device).repeat(
+                                                     batch_size, 1)
 
         return {
             'encoder_data': encoder_data,
@@ -248,14 +255,14 @@ class scFoundationTokenizer:
         }
 
     def tokenize_cell_vectors(
-        self,
-        expression_matrix: Union[np.ndarray, "scipy.sparse.spmatrix"],
-        gene_names: Union[List[str], np.ndarray],
-        target_sum: int = 10000,
-        pre_normalized: str = 'F',
-        return_tensors: str = 'pt',
-        include_decoder: bool = False,
-        tgt_high_res: str = 't4'
+            self,
+            expression_matrix: Union[np.ndarray, "scipy.sparse.spmatrix"],
+            gene_names: Union[List[str], np.ndarray],
+            target_sum: int = 10000,
+            pre_normalized: str = 'F',
+            return_tensors: str = 'pt',
+            include_decoder: bool = False,
+            tgt_high_res: str = 't4'
     ) -> Dict[str, Union[torch.Tensor, np.ndarray]]:
         """
         Tokenize single-cell expression data for scFoundation.
@@ -300,9 +307,9 @@ class scFoundationTokenizer:
         aligned_matrix, _ = self._align_genes(expression_matrix, gene_names)
 
         # Normalize expression
-        normalized_matrix = self._normalize_expression(
-            aligned_matrix, target_sum, pre_normalized
-        )
+        normalized_matrix = self._normalize_expression(aligned_matrix,
+                                                       target_sum,
+                                                       pre_normalized)
 
         # Add resolution tokens (last 2 positions)
         # Position 19264: target resolution, Position 19265: current resolution
@@ -323,8 +330,10 @@ class scFoundationTokenizer:
             target_res = np.full(batch_size, 4.0)  # Default
 
         # Append resolution tokens
-        resolution_tokens = np.stack([target_res, current_res], axis=1).astype(np.float32)
-        full_expression = np.concatenate([normalized_matrix, resolution_tokens], axis=1)
+        resolution_tokens = np.stack([target_res, current_res],
+                                     axis=1).astype(np.float32)
+        full_expression = np.concatenate([normalized_matrix, resolution_tokens],
+                                         axis=1)
 
         # Convert to tensor
         expression_tensor = torch.from_numpy(full_expression)
@@ -333,16 +342,16 @@ class scFoundationTokenizer:
             # Prepare both encoder and decoder data
             result = self._prepare_encoder_decoder_data(
                 expression_tensor[:, :self.NUM_GENES],
-                expression_tensor[:, :self.NUM_GENES]
-            )
+                expression_tensor[:, :self.NUM_GENES])
             # Add resolution tokens back to decoder data
             result['decoder_data'] = expression_tensor
-            result['decoder_position_gene_ids'] = torch.arange(
-                self.NUM_GENES + 2
-            ).repeat(batch_size, 1)
-            result['decoder_padding_mask'] = torch.zeros(
-                batch_size, self.NUM_GENES + 2, dtype=torch.bool
-            )
+            result['decoder_position_gene_ids'] = torch.arange(self.NUM_GENES +
+                                                               2).repeat(
+                                                                   batch_size,
+                                                                   1)
+            result['decoder_padding_mask'] = torch.zeros(batch_size,
+                                                         self.NUM_GENES + 2,
+                                                         dtype=torch.bool)
         else:
             # Encoder only (for cell embeddings)
             encoder_data, encoder_padding_mask, encoder_position_gene_ids = \
