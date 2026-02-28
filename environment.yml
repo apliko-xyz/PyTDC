@@ -35,6 +35,7 @@ dependencies:
     - pydantic==2.6.3
     - pytest==8.3.2
     - rdkit==2023.9.5
+    - einops>=0.7.0
     - scvi-tools==1.2.0
     - tiledbsoma==1.11.4
     - torch==2.1.1

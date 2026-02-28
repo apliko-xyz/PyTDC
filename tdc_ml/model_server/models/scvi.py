@@ -33,7 +33,7 @@ class scVI(nn.Module):
         import os
 
         from tdc_ml.multi_pred.anndata_dataset import DataLoader
-        from model_server.model_loaders import scvi_loader
+        from tdc_ml.model_server.model_loaders import scvi_loader
 
         if not os.path.isdir("scvi_model"):
             loader = scvi_loader.scVILoader()
