@@ -138,7 +138,7 @@ class TestModelServer(unittest.TestCase):
             adata.X.toarray(), gene_ids, return_tensors='pt')
 
         n_cells = adata.X.shape[0]
-        batch_size = 64
+        batch_size = 8
         all_embs = []
         with torch.no_grad():
             for i in range(0, n_cells, batch_size):
