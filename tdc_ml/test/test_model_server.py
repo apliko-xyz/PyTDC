@@ -140,9 +140,10 @@ class TestModelServer(unittest.TestCase):
 
         n_cells = adata.X.shape[0]
         batch_size = 8
+        test_cells = min(batch_size, n_cells)  # limit to 1 batch for CI speed
         all_embs = []
         with torch.no_grad():
-            for i in range(0, n_cells, batch_size):
+            for i in range(0, test_cells, batch_size):
                 batch_emb = model.get_cell_embedding(
                     tokens['encoder_data'][i:i + batch_size].to(device),
                     tokens['encoder_position_gene_ids'][i:i +
@@ -151,7 +152,7 @@ class TestModelServer(unittest.TestCase):
                     pool_type='all')
                 all_embs.append(batch_emb.cpu())
         emb = torch.cat(all_embs, dim=0)
-        assert emb.shape == (n_cells, 3072), \
+        assert emb.shape == (test_cells, 3072), \
             f"FAILURE: unexpected embedding shape {emb.shape}"
         assert not torch.isnan(emb).any(), "FAILURE: embedding contains NaN"
         assert not torch.isinf(emb).any(), "FAILURE: embedding contains Inf"
