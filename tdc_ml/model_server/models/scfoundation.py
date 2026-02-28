@@ -408,6 +408,44 @@ class SelfAttention(nn.Module):
 
 
 
+class StandardTransformerEncoder(nn.Module):
+    """
+    Standard transformer encoder matching the scFoundation checkpoint.
+
+    The official checkpoint uses nn.TransformerEncoderLayer stored in a
+    ModuleList called 'transformer_encoder', not Performer attention.
+    """
+
+    def __init__(
+        self,
+        dim: int,
+        depth: int,
+        heads: int,
+        dim_feedforward: int = 3072,
+        ff_dropout: float = 0.,
+        attn_dropout: float = 0.
+    ):
+        super().__init__()
+        self.transformer_encoder = nn.ModuleList([
+            nn.TransformerEncoderLayer(
+                d_model=dim,
+                nhead=heads,
+                dim_feedforward=dim_feedforward,
+                dropout=ff_dropout,
+                activation='gelu',
+                batch_first=True,
+                norm_first=False
+            )
+            for _ in range(depth)
+        ])
+        self.norm = nn.LayerNorm(dim)
+
+    def forward(self, x, padding_mask=None, **kwargs):
+        for layer in self.transformer_encoder:
+            x = layer(x, src_key_padding_mask=padding_mask)
+        return self.norm(x)
+
+
 def route_args(router, args, depth):
     """Route arguments to appropriate layers."""
     routed_args = [(dict(), dict()) for _ in range(depth)]
@@ -734,13 +772,12 @@ class scFoundationModel(nn.Module):
         # Positional embedding
         self.pos_emb = nn.Embedding(cfg.max_seq_len + 1, cfg.encoder_hidden_dim)
 
-        # Encoder
-        self.encoder = PerformerModule(
-            max_seq_len=cfg.max_seq_len,
+        # Encoder — uses standard transformer attention to match the checkpoint
+        self.encoder = StandardTransformerEncoder(
             dim=cfg.encoder_hidden_dim,
             depth=cfg.encoder_depth,
             heads=cfg.encoder_heads,
-            dim_head=cfg.encoder_dim_head,
+            dim_feedforward=cfg.encoder_hidden_dim * 4,
             ff_dropout=cfg.ff_dropout,
             attn_dropout=cfg.attn_dropout
         )

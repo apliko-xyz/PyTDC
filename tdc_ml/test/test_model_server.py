@@ -133,15 +133,19 @@ class TestModelServer(unittest.TestCase):
         tokens = tokenizer.tokenize_cell_vectors(
             adata.X.toarray(), gene_ids, return_tensors='pt')
 
-        with torch.no_grad():
-            emb = model.get_cell_embedding(
-                tokens['encoder_data'],
-                tokens['encoder_position_gene_ids'],
-                tokens['encoder_padding_mask'],
-                pool_type='all'
-            )
-
         n_cells = adata.X.shape[0]
+        batch_size = 16
+        all_embs = []
+        with torch.no_grad():
+            for i in range(0, n_cells, batch_size):
+                batch_emb = model.get_cell_embedding(
+                    tokens['encoder_data'][i:i + batch_size],
+                    tokens['encoder_position_gene_ids'][i:i + batch_size],
+                    tokens['encoder_padding_mask'][i:i + batch_size],
+                    pool_type='all'
+                )
+                all_embs.append(batch_emb)
+        emb = torch.cat(all_embs, dim=0)
         assert emb.shape == (n_cells, 3072), \
             f"FAILURE: unexpected embedding shape {emb.shape}"
         assert not torch.isnan(emb).any(), "FAILURE: embedding contains NaN"
