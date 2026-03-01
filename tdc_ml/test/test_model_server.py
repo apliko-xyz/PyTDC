@@ -113,6 +113,51 @@ class TestModelServer(unittest.TestCase):
         output = model(adata)
         print(f"scVI ran successfully. here is an ouput: {output}")
 
+    def testscFoundation(self):
+        from tdc_ml.multi_pred.anndata_dataset import DataLoader
+        from tdc_ml import tdc_hf_interface
+        from tdc_ml.model_server.tokenizers.scfoundation import scFoundationTokenizer
+        import torch
+
+        adata = DataLoader("cellxgene_sample_small",
+                           "./data",
+                           dataset_names=["cellxgene_sample_small"],
+                           no_convert=True).adata
+
+        scfoundation = tdc_hf_interface("scFoundation")
+        model = scfoundation.load()
+        model.eval()
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Running scFoundation on {device}")
+        model = model.to(device)
+
+        tokenizer = scFoundationTokenizer()
+        gene_ids = adata.var["feature_name"].to_numpy()
+        tokens = tokenizer.tokenize_cell_vectors(adata.X.toarray(),
+                                                 gene_ids,
+                                                 return_tensors='pt')
+
+        n_cells = adata.X.shape[0]
+        batch_size = 8
+        test_cells = min(batch_size, n_cells)  # limit to 1 batch for CI speed
+        all_embs = []
+        with torch.no_grad():
+            for i in range(0, test_cells, batch_size):
+                batch_emb = model.get_cell_embedding(
+                    tokens['encoder_data'][i:i + batch_size].to(device),
+                    tokens['encoder_position_gene_ids'][i:i +
+                                                        batch_size].to(device),
+                    tokens['encoder_padding_mask'][i:i + batch_size].to(device),
+                    pool_type='all')
+                all_embs.append(batch_emb.cpu())
+        emb = torch.cat(all_embs, dim=0)
+        assert emb.shape == (test_cells, 3072), \
+            f"FAILURE: unexpected embedding shape {emb.shape}"
+        assert not torch.isnan(emb).any(), "FAILURE: embedding contains NaN"
+        assert not torch.isinf(emb).any(), "FAILURE: embedding contains Inf"
+        print(f"scFoundation ran successfully. Embedding shape: {emb.shape}")
+
     def tearDown(self):
         try:
             print(os.getcwd())
