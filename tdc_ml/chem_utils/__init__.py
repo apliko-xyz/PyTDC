@@ -7,4 +7,4 @@ from .evaluator import (
     fcd_distance,
 )
 from .featurize.molconvert import MolConvert
-from .oracle.filter import MolFilter
+# from .oracle.filter import MolFilter
