@@ -51,6 +51,20 @@ To install the core environment dependencies of TDC, use `pip`:
 pip install pytdc-nextml
 ```
 
+## Packaging
+
+PyTDC uses the standard PEP 517 build interface. To build the source
+distribution and wheel locally, run:
+
+```bash
+python -m pip install --upgrade build twine
+python -m build
+python -m twine check dist/*
+```
+
+The generated wheel is written under `dist/` and is suitable for upload to PyPI
+after the release version has been updated.
+
 
 
 ## Cite Us
@@ -98,4 +112,23 @@ PyTDC is built on top of other open-sourced projects. Additionally, please cite 
 Many PyTDC datasets are hosted on [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/21LKWG) with the following persistent identifier [https://doi.org/10.7910/DVN/21LKWG](https://doi.org/10.7910/DVN/21LKWG). When Dataverse is under maintenance, PyTDC datasets cannot be retrieved. That happens rarely; please check the status on [the Dataverse website](https://dataverse.harvard.edu/).
 
 ## License
-The PyTDC codebase is licensed under the MIT license. For individual dataset usage, please refer to the dataset license on the website.
+The PyTDC codebase is licensed under the MIT license. The wheel and source
+distribution include the repository `LICENSE` file and publish MIT license
+metadata.
+
+Dataset and model artifacts may have their own licenses or terms. For those
+assets, follow the upstream dataset/model license and citation guidance shown on
+the PyTDC website or in the original source repository.
+
+PyTDC also exposes license/provenance metadata from Python for assets with
+recorded terms:
+
+```python
+from tdc_ml import retrieve_license_info
+
+retrieve_license_info("cellxgene-census")
+```
+
+If metadata has not been recorded for an asset, the helper returns a conservative
+`unknown` response so users know to inspect the upstream source before
+redistribution, commercial use, or model training.
