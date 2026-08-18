@@ -46,6 +46,7 @@ jobs:
       - name: Create and start Conda environment. Run tests
         run: |
           echo "Creating Conda Environment from environment.yml"
+          conda config --set solver libmamba
           conda env create -q -f environment.yml
           conda activate pytdc
           python run_tests.py
