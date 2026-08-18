@@ -33,7 +33,6 @@ UNKNOWN_LICENSE = AssetLicense(
     ),
 )
 
-
 _LICENSES: Dict[str, AssetLicense] = {}
 
 
@@ -41,8 +40,8 @@ def _normalize(name: str) -> str:
     return name.casefold().replace("_", "-").strip()
 
 
-def register_asset_license(info: AssetLicense,
-                           aliases: Iterable[str] = ()) -> None:
+def register_asset_license(
+    info: AssetLicense, aliases: Iterable[str] = ()) -> None:
     """Register license metadata under its name and optional aliases."""
     keys = (info.name, *aliases)
     for key in keys:
@@ -83,11 +82,10 @@ register_asset_license(
         source_url="https://github.com/chanzuckerberg/cellxgene-census",
         allowed_uses=("research", "commercial", "redistribution"),
         citation="CELLxGENE Discover Census",
-        notes=(
-            "This entry describes the client package license. Users should also "
-            "review CELLxGENE dataset-level terms for the specific data release "
-            "they query."
-        ),
+        notes=
+        ("This entry describes the client package license. Users should also "
+         "review CELLxGENE dataset-level terms for the specific data release "
+         "they query."),
     ),
     aliases=("cellxgene_census", "cellxgene"),
 )
