@@ -32,7 +32,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/apliko-xyz/PyTDC",
     project_urls={
-        "Homepage": "https://pytdc.apliko.io",
+        "Homepage": "https://pytdc.arcell.ai",
         "Source": "https://github.com/apliko-xyz/PyTDC",
         "Issues": "https://github.com/apliko-xyz/PyTDC/issues",
     },
