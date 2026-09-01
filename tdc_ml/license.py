@@ -72,20 +72,3 @@ def retrieve_license_info(name: str,
                           default_unknown: bool = True) -> Dict[str, object]:
     """Return a dictionary of license and provenance metadata for an asset."""
     return get_asset_license(name, default_unknown).to_dict()
-
-
-register_asset_license(
-    AssetLicense(
-        name="cellxgene-census",
-        asset_type="resource",
-        license="MIT",
-        source_url="https://github.com/chanzuckerberg/cellxgene-census",
-        allowed_uses=("research", "commercial", "redistribution"),
-        citation="CELLxGENE Discover Census",
-        notes=
-        ("This entry describes the client package license. Users should also "
-         "review CELLxGENE dataset-level terms for the specific data release "
-         "they query."),
-    ),
-    aliases=("cellxgene_census", "cellxgene"),
-)

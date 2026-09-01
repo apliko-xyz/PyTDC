@@ -120,15 +120,14 @@ Dataset and model artifacts may have their own licenses or terms. For those
 assets, follow the upstream dataset/model license and citation guidance shown on
 the PyTDC website or in the original source repository.
 
-PyTDC also exposes license/provenance metadata from Python for assets with
-recorded terms:
+PyTDC also exposes license/provenance metadata from Python. Assets without
+recorded terms return a conservative `unknown` response:
 
 ```python
 from tdc_ml import retrieve_license_info
 
-retrieve_license_info("cellxgene-census")
+retrieve_license_info("example-asset")
 ```
 
-If metadata has not been recorded for an asset, the helper returns a conservative
-`unknown` response so users know to inspect the upstream source before
+Use that response as a prompt to inspect the upstream source before
 redistribution, commercial use, or model training.
