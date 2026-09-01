@@ -50,3 +50,15 @@ jobs:
           conda activate pytdc
           python run_tests.py
           conda deactivate
+
+      - name: Build wheel and source distribution
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+          python -m twine check dist/*
+
+      - name: Upload Python distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytdc-nextml-dist
+          path: dist/*
