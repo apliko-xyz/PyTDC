@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # Author: TDC Team
 # License: MIT
-from packaging import version
-import pkg_resources
 """This file contains all metadata of datasets in TDC.
 
 Attributes:

@@ -54,7 +54,7 @@ class scFoundationLoader:
         print(f"  File ID: {self.GDRIVE_FILE_ID}")
         print(f"  Dest   : {os.path.abspath(output_path)}")
 
-        gdown.download(url, output_path, quiet=False, fuzzy=True)
+        gdown.download(url, output_path, quiet=False)
 
         size = os.path.getsize(output_path) if os.path.exists(
             output_path) else 0

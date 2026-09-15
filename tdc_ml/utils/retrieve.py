@@ -5,6 +5,7 @@ import pandas as pd
 from .label_name_list import dataset2target_lists
 from .misc import fuzzy_search
 from .load import pd_load
+from ..license import retrieve_license_info
 from ..metadata import dataset_names, benchmark_names, dataset_list
 
 

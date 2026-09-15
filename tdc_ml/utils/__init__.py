@@ -44,5 +44,6 @@ from .retrieve import (
     retrieve_dataset_names,
     retrieve_all_benchmarks,
     retrieve_benchmark_names,
+    retrieve_license_info,
 )
 from .query import uniprot2seq, cid2smiles
